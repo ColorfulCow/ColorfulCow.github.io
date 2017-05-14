@@ -12,24 +12,24 @@
 
     
     <meta name="description" content="在工作中使用redux管理react组件中的数据。一直对redux中的数据流向比较模糊，所以梳理一下这块的知识。
-可以看到redux源码中实际上只有5个部分组成：applyMiddleware.js,bindActionCreators.js,combineReducers.js,compose.js,createStore.js组成，和redux的api一一对应
-先梳理一下redux的api
-c">
+可以看到redux源码中实际上只有5个部分组成：applyMiddleware.js,bindActionCreators.js,combineReducers.js,compose.js,createStore.js组成，文件名和redux的api一一对应
+每个api的作用如下
+co">
 <meta property="og:type" content="article">
 <meta property="og:title" content="redux数据流">
 <meta property="og:url" content="https://colorfulcow.github.io/2016/01/21/redux数据流/index.html">
 <meta property="og:site_name" content="colorfulcow">
 <meta property="og:description" content="在工作中使用redux管理react组件中的数据。一直对redux中的数据流向比较模糊，所以梳理一下这块的知识。
-可以看到redux源码中实际上只有5个部分组成：applyMiddleware.js,bindActionCreators.js,combineReducers.js,compose.js,createStore.js组成，和redux的api一一对应
-先梳理一下redux的api
-c">
-<meta property="og:updated_time" content="2017-05-07T06:37:41.000Z">
+可以看到redux源码中实际上只有5个部分组成：applyMiddleware.js,bindActionCreators.js,combineReducers.js,compose.js,createStore.js组成，文件名和redux的api一一对应
+每个api的作用如下
+co">
+<meta property="og:updated_time" content="2017-05-14T12:10:29.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="redux数据流">
 <meta name="twitter:description" content="在工作中使用redux管理react组件中的数据。一直对redux中的数据流向比较模糊，所以梳理一下这块的知识。
-可以看到redux源码中实际上只有5个部分组成：applyMiddleware.js,bindActionCreators.js,combineReducers.js,compose.js,createStore.js组成，和redux的api一一对应
-先梳理一下redux的api
-c">
+可以看到redux源码中实际上只有5个部分组成：applyMiddleware.js,bindActionCreators.js,combineReducers.js,compose.js,createStore.js组成，文件名和redux的api一一对应
+每个api的作用如下
+co">
 
     
     <link rel="alternative" href="/atom.xml" title="colorfulcow" type="application/atom+xml">
@@ -105,14 +105,14 @@ c">
 		<div id="toc" class="toc-article">
 			<strong class="toc-title">Contents</strong>
 		
-			<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#先梳理一下redux的api"><span class="toc-number">1.</span> <span class="toc-text">先梳理一下redux的api</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#combineReducer"><span class="toc-number">1.1.</span> <span class="toc-text">combineReducer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#createStore"><span class="toc-number">1.2.</span> <span class="toc-text">createStore,</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#applyMiddleware"><span class="toc-number">1.3.</span> <span class="toc-text">applyMiddleware</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#compose"><span class="toc-number">1.4.</span> <span class="toc-text">compose</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实际开发中遇到的问题"><span class="toc-number">2.</span> <span class="toc-text">实际开发中遇到的问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-action到reducer的映射，怎样对应过去"><span class="toc-number">2.1.</span> <span class="toc-text">1.action到reducer的映射，怎样对应过去?</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#react-redux库提供了比较便捷的绑定方式"><span class="toc-number">2.1.1.</span> <span class="toc-text">react-redux库提供了比较便捷的绑定方式</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-实现异步的action"><span class="toc-number">2.2.</span> <span class="toc-text">2.实现异步的action</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#理解middleware"><span class="toc-number">2.3.</span> <span class="toc-text">理解middleware</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-怎样保持UI和URL的同步？"><span class="toc-number">2.4.</span> <span class="toc-text">3.怎样保持UI和URL的同步？</span></a></li></ol></li></ol>
+			<ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#每个api的作用如下"><span class="toc-number">1.</span> <span class="toc-text">每个api的作用如下</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#combineReducer"><span class="toc-number">1.1.</span> <span class="toc-text">combineReducer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#createStore"><span class="toc-number">1.2.</span> <span class="toc-text">createStore,</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#applyMiddleware"><span class="toc-number">1.3.</span> <span class="toc-text">applyMiddleware</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#compose"><span class="toc-number">1.4.</span> <span class="toc-text">compose</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实际开发中遇到的问题"><span class="toc-number">2.</span> <span class="toc-text">实际开发中遇到的问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-action到reducer的映射，怎样对应过去"><span class="toc-number">2.1.</span> <span class="toc-text">1.action到reducer的映射，怎样对应过去?</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#react-redux库提供了比较便捷的绑定方式"><span class="toc-number">2.1.1.</span> <span class="toc-text">react-redux库提供了比较便捷的绑定方式</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-实现异步的action"><span class="toc-number">2.2.</span> <span class="toc-text">2.实现异步的action</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#理解middleware"><span class="toc-number">2.3.</span> <span class="toc-text">理解middleware</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-怎样保持UI和URL的同步？"><span class="toc-number">2.4.</span> <span class="toc-text">3.怎样保持UI和URL的同步？</span></a></li></ol></li></ol>
 		
 		</div>
 		
 		<p>在工作中使用redux管理react组件中的数据。一直对redux中的数据流向比较模糊，所以梳理一下这块的知识。</p>
-<p>可以看到<a href="https://github.com/rackt/redux/tree/master/src" target="_blank" rel="external">redux</a>源码中实际上只有5个部分组成：applyMiddleware.js,bindActionCreators.js,combineReducers.js,compose.js,createStore.js组成，和redux的api一一对应</p>
-<h3 id="先梳理一下redux的api"><a href="#先梳理一下redux的api" class="headerlink" title="先梳理一下redux的api"></a>先梳理一下redux的api</h3><blockquote>
-<h4 id="combineReducer"><a href="#combineReducer" class="headerlink" title="combineReducer"></a>combineReducer</h4></blockquote>
+<p>可以看到<a href="https://github.com/rackt/redux/tree/master/src" target="_blank" rel="external">redux</a>源码中实际上只有5个部分组成：<code>applyMiddleware.js</code>,<code>bindActionCreators.js</code>,<code>combineReducers.js</code>,<code>compose.js</code>,<code>createStore.js</code>组成，文件名和redux的api一一对应</p>
+<h3 id="每个api的作用如下"><a href="#每个api的作用如下" class="headerlink" title="每个api的作用如下"></a>每个api的作用如下</h3><blockquote>
+<h4 id="combineReducer"><a href="#combineReducer" class="headerlink" title="combineReducer"></a><strong>combineReducer</strong></h4></blockquote>
 <p>把多个reducer函数合并成一个最终的reducer函数，然后可以对最终的reducer函数调用createStore()方法。</p>
 <blockquote>
 <h4 id="createStore"><a href="#createStore" class="headerlink" title="createStore,"></a>createStore,</h4></blockquote>
@@ -210,7 +210,7 @@ c">
   <div id="toc" class="toc-aside">
   <strong class="toc-title">Contents</strong>
  
- <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#先梳理一下redux的api"><span class="toc-number">1.</span> <span class="toc-text">先梳理一下redux的api</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#combineReducer"><span class="toc-number">1.1.</span> <span class="toc-text">combineReducer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#createStore"><span class="toc-number">1.2.</span> <span class="toc-text">createStore,</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#applyMiddleware"><span class="toc-number">1.3.</span> <span class="toc-text">applyMiddleware</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#compose"><span class="toc-number">1.4.</span> <span class="toc-text">compose</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实际开发中遇到的问题"><span class="toc-number">2.</span> <span class="toc-text">实际开发中遇到的问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-action到reducer的映射，怎样对应过去"><span class="toc-number">2.1.</span> <span class="toc-text">1.action到reducer的映射，怎样对应过去?</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#react-redux库提供了比较便捷的绑定方式"><span class="toc-number">2.1.1.</span> <span class="toc-text">react-redux库提供了比较便捷的绑定方式</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-实现异步的action"><span class="toc-number">2.2.</span> <span class="toc-text">2.实现异步的action</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#理解middleware"><span class="toc-number">2.3.</span> <span class="toc-text">理解middleware</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-怎样保持UI和URL的同步？"><span class="toc-number">2.4.</span> <span class="toc-text">3.怎样保持UI和URL的同步？</span></a></li></ol></li></ol>
+ <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#每个api的作用如下"><span class="toc-number">1.</span> <span class="toc-text">每个api的作用如下</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#combineReducer"><span class="toc-number">1.1.</span> <span class="toc-text">combineReducer</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#createStore"><span class="toc-number">1.2.</span> <span class="toc-text">createStore,</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#applyMiddleware"><span class="toc-number">1.3.</span> <span class="toc-text">applyMiddleware</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#compose"><span class="toc-number">1.4.</span> <span class="toc-text">compose</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#实际开发中遇到的问题"><span class="toc-number">2.</span> <span class="toc-text">实际开发中遇到的问题</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1-action到reducer的映射，怎样对应过去"><span class="toc-number">2.1.</span> <span class="toc-text">1.action到reducer的映射，怎样对应过去?</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#react-redux库提供了比较便捷的绑定方式"><span class="toc-number">2.1.1.</span> <span class="toc-text">react-redux库提供了比较便捷的绑定方式</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2-实现异步的action"><span class="toc-number">2.2.</span> <span class="toc-text">2.实现异步的action</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#理解middleware"><span class="toc-number">2.3.</span> <span class="toc-text">理解middleware</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#3-怎样保持UI和URL的同步？"><span class="toc-number">2.4.</span> <span class="toc-text">3.怎样保持UI和URL的同步？</span></a></li></ol></li></ol>
  
   </div>
 
@@ -260,11 +260,11 @@ c">
 			
 		
 			
-				<li><a href="/tags/HTTP/" title="HTTP">HTTP<sup>1</sup></a></li>
+				<li><a href="/tags/redux/" title="redux">redux<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/redux/" title="redux">redux<sup>1</sup></a></li>
+				<li><a href="/tags/HTTP/" title="HTTP">HTTP<sup>1</sup></a></li>
 			
 		
 			
