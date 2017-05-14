@@ -44,7 +44,7 @@
 				<h1 class="site-name"><a href="/" title="colorfulcow">colorfulcow</a></h1>
 				<h2 class="blog-motto"></h2>
 			</div>
-			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
 			</a></div>
 			<nav class="animated">
 				<ul>
@@ -59,7 +59,7 @@
  					
 					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
 						<label>Search</label>
-						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
 						<input type="hidden" name="q" value="site:colorfulcow.github.io">
 					</form>
 					
@@ -85,7 +85,7 @@
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2017-05-14T12:43:12.000Z" itemprop="datePublished"> 发表于 2017-05-14</time>
+    <time datetime="2017-05-14T12:43:12.000Z" itemprop="datePublished"> Published 2017-05-14</time>
     
   </p>
 </header>
@@ -157,7 +157,7 @@
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2017-02-07T02:34:34.000Z" itemprop="datePublished"> 发表于 2017-02-07</time>
+    <time datetime="2017-02-07T02:34:34.000Z" itemprop="datePublished"> Published 2017-02-07</time>
     
   </p>
 </header>
@@ -274,7 +274,7 @@
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2017-01-01T15:22:45.000Z" itemprop="datePublished"> 发表于 2017-01-01</time>
+    <time datetime="2017-01-01T15:22:45.000Z" itemprop="datePublished"> Published 2017-01-01</time>
     
   </p>
 </header>
@@ -372,7 +372,7 @@
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2016-09-11T13:15:37.000Z" itemprop="datePublished"> 发表于 2016-09-11</time>
+    <time datetime="2016-09-11T13:15:37.000Z" itemprop="datePublished"> Published 2016-09-11</time>
     
   </p>
 </header>
@@ -433,6 +433,88 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2016/08/14/通过shouldComponentUpdate优化react渲染性能/" title="通过shouldComponentUpdate优化react渲染性能" itemprop="url">通过shouldComponentUpdate优化react渲染性能</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
+		
+  <p class="article-time">
+    <time datetime="2016-08-14T15:58:48.000Z" itemprop="datePublished"> Published 2016-08-14</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <p><strong>2017-05-14更新：</strong><br>在react v15.3后新增了PureComponent, 内部实现了shouldComponentUpdate方法，方法内部是通过shallowEqual方法比较当前组件的状态和新状态之间的差异，计算出组件是否应该渲染；</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">MyComponent</span> <span class="keyword">extends</span> <span class="title">React</span>.<span class="title">PureComponent</span> </span>&#123;</div><div class="line">  render() &#123;</div><div class="line">    <span class="keyword">return</span> &lt;div&gt;foo&lt;/div&gt;;</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<h4 id="react组件中使用shouldComponentUpdate"><a href="#react组件中使用shouldComponentUpdate" class="headerlink" title="react组件中使用shouldComponentUpdate"></a><strong>react组件中使用shouldComponentUpdate</strong></h4><p><strong>是否需要使用shouldComponentUpdate?</strong><br>React 是状态驱动的，它实现了一个叫做 Reconciliation 的算法，用于状态转移时对组件树的快速比对，从而计算出需要对组件树进行哪些 Update 操作。不同的 Component Type 生成不同的组件树。Lists 比对时，通过唯一稳定可预测的 key 来识别元素。Reconciliation 的时间复杂度仅为 O(n)，所以react是一个非常快的前端框架。react官方文档给出了shouldComponentUpdate方法来优化react的渲染频率，</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">shouldComponentUpdate: <span class="function"><span class="keyword">function</span>(<span class="params">nextProps, nextState</span>) </span>&#123;</div><div class="line">  <span class="keyword">return</span> nextProps.id !== <span class="keyword">this</span>.props.id;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>官方文档是这样介绍的：<br>如果 shouldComponentUpdate 返回 false，则 render() 将不会执行，直到下一次 state 改变。（另外，componentWillUpdate 和 componentDidUpdate 也不会被调用。</p>
+<p>默认情况下，shouldComponentUpdate 总会返回 true，在 state 改变的时候避免细微的 bug，但是如果总是小心地把 state 当做不可变的，在 render() 中只从 props 和 state 读取值，此时你可以覆盖 shouldComponentUpdate 方法，实现新老 props 和 state 的比对逻辑。</p>
+<p>如果性能是个瓶颈，尤其是有几十个甚至上百个组件的时候，使用 shouldComponentUpdate 可以提升应用的性能。</p>
+<p>但是从官方的描述中无法得知它在什么情况下才能发挥作用，不知道什么时候需要动手写shouldComponentUpdate方法。</p>
+<p>google上有这么一篇文件介绍是否应该使用shouldComponentUpdate,<a href="http://jamesknelson.com/should-i-use-shouldcomponentupdate/" target="_blank" rel="external">Should I use shouldComponentUpdate</a>,以下是文章中的一些观点和测试用例</p>
+<p><strong>如果你在React组件中写了shouldComponentUpdate方法后不能获得可测量的，并且是可察觉到的性能提升，那就不要写</strong></p>
+<p>按照React团队的说法，shouldComponentUpdate是保证性能的紧急出口，既然是紧急出口，那就意味着我们轻易用不到它。但既然有这样一个紧急出口，那说明有时候它还是很有必要的。所以我们要搞清楚到底什么时候才需要使用这个紧急出口。</p>
+<p>尽管在写代码时，我们看到render返回的都是JSX或者ReactElement，但实际上，它返回的都是下面这种普通的JavaScript对象：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&#123;</div><div class="line">  <span class="attr">type</span>: <span class="string">'ul'</span>,</div><div class="line">  <span class="attr">props</span>: &#123; <span class="attr">className</span>: <span class="string">'what-do-you-want-to-do-tonight'</span> &#125;,</div><div class="line">  <span class="attr">children</span>: [&#123; </div><div class="line">    <span class="attr">type</span>: <span class="string">'li'</span>, </div><div class="line">    <span class="attr">children</span>: <span class="string">'The same thing we do every night, pinky.'</span> </div><div class="line">  &#125;,]</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>React就是用这种对象来描述要在界面中渲染的标签。如果跟上次渲染时所用的对象比较，数据没有发生变化，显然就不用更新界面中的DOM。</p>
+<p>换句话说，React已经替我们实现了一个shouldComponentUpdate。为了简化，我们可以假装props不是绑在组件的this上的，而是直接传给了render，那么React的实现基本上就是下面这样的：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">shouldComponentUpdate(nextProps) &#123;</div><div class="line">  <span class="keyword">return</span> !deepEquals(render(<span class="keyword">this</span>.props), render(nextProps))</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>如果render的返回值很小，但props是个大家伙，那自己写shouldComponentUpdate很可能不会带来什么好结果</p>
+<h2 id="华丽的分割线"><a href="#华丽的分割线" class="headerlink" title="华丽的分割线"></a>华丽的分割线</h2><p><strong>在什么场景中使用shouldComponentUpdate会得到较好的效果？</strong><br>在这样一个场景中，如果我们自己写shouldComponentUpdate，那速度要比React默认实现的处理速度快很多，比如要渲染一个table，我们从props中得到数据，然后又对这些数据做了些计算。并且这些数据都是放在Immutable.js的结构中的，因此通过比较引用是否相等就能判断出props是否发生了变化。</p>
+<p>只有经过测量，发现有了shouldComponentUpdate后组件的渲染速度确实有可察觉的提升，你才应该用它。</p>
+<p>具体我们可以使用chrome浏览器调试工具中的PROFILES性能分析工具来测试组件的render()的执行时间，如果render方法耗时较长，那么加上shouldComponentUpdate()会得到较好的收益，反之就是没必要加。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/javascript/">javascript</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/react/">react</a><a href="/tags/前端框架/">前端框架</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/08/14/通过shouldComponentUpdate优化react渲染性能/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2016/03/07/通过css实现各种居中效果/" title="通过css实现各种居中效果" itemprop="url">通过css实现各种居中效果</a>
   </h1>
   <p class="article-author">By
@@ -440,7 +522,7 @@
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2016-03-07T10:42:04.000Z" itemprop="datePublished"> 发表于 2016-03-07</time>
+    <time datetime="2016-03-07T10:42:04.000Z" itemprop="datePublished"> Published 2016-03-07</time>
     
   </p>
 </header>
@@ -532,7 +614,7 @@
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2016-01-21T04:42:40.000Z" itemprop="datePublished"> 发表于 2016-01-21</time>
+    <time datetime="2016-01-21T04:42:40.000Z" itemprop="datePublished"> Published 2016-01-21</time>
     
   </p>
 </header>
@@ -627,7 +709,7 @@
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2015-12-25T13:51:45.000Z" itemprop="datePublished"> 发表于 2015-12-25</time>
+    <time datetime="2015-12-25T13:51:45.000Z" itemprop="datePublished"> Published 2015-12-25</time>
     
   </p>
 </header>
@@ -693,10 +775,10 @@
 
 
 </div>
-      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
 
 <div id="asidepart">
-<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
 <aside class="clearfix">
 
   
@@ -704,7 +786,7 @@
 
   
 <div class="categorieslist">
-	<p class="asidetitle">分类</p>
+	<p class="asidetitle">Categories</p>
 		<ul>
 		
 		  
@@ -716,7 +798,7 @@
 		  
 		
 		  
-			<li><a href="/categories/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>2</sup></a></li>
 		  
 		
 		  
@@ -737,7 +819,7 @@
 
   
 <div class="tagslist">
-	<p class="asidetitle">标签</p>
+	<p class="asidetitle">Tags</p>
 		<ul class="clearfix">
 		
 			
@@ -749,19 +831,27 @@
 			
 		
 			
-				<li><a href="/tags/函数式编程/" title="函数式编程">函数式编程<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/HTTP/" title="HTTP">HTTP<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/https简介/" title="https简介">https简介<sup>1</sup></a></li>
+				<li><a href="/tags/函数式编程/" title="函数式编程">函数式编程<sup>1</sup></a></li>
 			
 		
 			
 				<li><a href="/tags/redux/" title="redux">redux<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/react/" title="react">react<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/前端框架/" title="前端框架">前端框架<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/https简介/" title="https简介">https简介<sup>1</sup></a></li>
 			
 		
 			
@@ -777,7 +867,7 @@
 
 
   <div class="linkslist">
-  <p class="asidetitle">友情链接</p>
+  <p class="asidetitle">Links</p>
     <ul>
         
           <li>
@@ -904,7 +994,7 @@ var _hmt = _hmt || [];
 <!-- Totop Begin -->
 
 	<div id="totop">
-	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
 	</div>
 	<script src="/js/totop.js"></script>
 
