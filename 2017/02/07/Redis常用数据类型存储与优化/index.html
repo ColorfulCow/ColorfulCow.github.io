@@ -64,7 +64,7 @@ Redis 内部使用一个 redisObject 对象来表示所有的 key 和 value，re
 				<h1 class="site-name"><a href="/" title="colorfulcow">colorfulcow</a></h1>
 				<h2 class="blog-motto"></h2>
 			</div>
-			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
 			</a></div>
 			<nav class="animated">
 				<ul>
@@ -79,7 +79,7 @@ Redis 内部使用一个 redisObject 对象来表示所有的 key 和 value，re
  					
 					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
 						<label>Search</label>
-						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
 						<input type="hidden" name="q" value="site:colorfulcow.github.io">
 					</form>
 					
@@ -103,14 +103,14 @@ Redis 内部使用一个 redisObject 对象来表示所有的 key 和 value，re
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2017-02-07T02:34:34.000Z" itemprop="datePublished"> 发表于 2017-02-07</time>
+    <time datetime="2017-02-07T02:34:34.000Z" itemprop="datePublished"> Published 2017-02-07</time>
     
   </p>
 </header>
 	<div class="article-content">
 		
 		<div id="toc" class="toc-article">
-			<strong class="toc-title">文章目录</strong>
+			<strong class="toc-title">Contents</strong>
 		
 			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#Redis常用的数据类型"><span class="toc-number">1.</span> <span class="toc-text">Redis常用的数据类型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#五种数据类型的使用和内部实现方式"><span class="toc-number">2.</span> <span class="toc-text">五种数据类型的使用和内部实现方式</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#String"><span class="toc-number">2.1.</span> <span class="toc-text">String</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Hash"><span class="toc-number">2.2.</span> <span class="toc-text">Hash</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#List"><span class="toc-number">2.3.</span> <span class="toc-text">List</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Set"><span class="toc-number">2.4.</span> <span class="toc-text">Set</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Sorted-set"><span class="toc-number">2.5.</span> <span class="toc-text">Sorted set</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#常用内存优化手段"><span class="toc-number">3.</span> <span class="toc-text">常用内存优化手段</span></a></li></ol>
 		
@@ -234,17 +234,17 @@ Redis 内部使用一个 redisObject 对象来表示所有的 key 和 value，re
 </section>
 
 </div>  
-      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
 
   <div id="toc" class="toc-aside">
-  <strong class="toc-title">文章目录</strong>
+  <strong class="toc-title">Contents</strong>
  
  <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#Redis常用的数据类型"><span class="toc-number">1.</span> <span class="toc-text">Redis常用的数据类型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#五种数据类型的使用和内部实现方式"><span class="toc-number">2.</span> <span class="toc-text">五种数据类型的使用和内部实现方式</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#String"><span class="toc-number">2.1.</span> <span class="toc-text">String</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Hash"><span class="toc-number">2.2.</span> <span class="toc-text">Hash</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#List"><span class="toc-number">2.3.</span> <span class="toc-text">List</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Set"><span class="toc-number">2.4.</span> <span class="toc-text">Set</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#Sorted-set"><span class="toc-number">2.5.</span> <span class="toc-text">Sorted set</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#常用内存优化手段"><span class="toc-number">3.</span> <span class="toc-text">常用内存优化手段</span></a></li></ol>
  
   </div>
 
 <div id="asidepart">
-<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
 <aside class="clearfix">
 
   
@@ -252,7 +252,7 @@ Redis 内部使用一个 redisObject 对象来表示所有的 key 和 value，re
 
   
 <div class="categorieslist">
-	<p class="asidetitle">分类</p>
+	<p class="asidetitle">Categories</p>
 		<ul>
 		
 		  
@@ -268,8 +268,6 @@ Redis 内部使用一个 redisObject 对象来表示所有的 key 和 value，re
 		  
 		
 		  
-		
-		  
 			<li><a href="/categories/javascript/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 		  
 		
@@ -278,6 +276,8 @@ Redis 内部使用一个 redisObject 对象来表示所有的 key 和 value，re
 		  
 		
 		  
+			<li><a href="/categories/浏览器/" title="浏览器">浏览器<sup>1</sup></a></li>
+		  
 		
 		</ul>
 </div>
@@ -285,7 +285,7 @@ Redis 内部使用一个 redisObject 对象来表示所有的 key 和 value，re
 
   
 <div class="tagslist">
-	<p class="asidetitle">标签</p>
+	<p class="asidetitle">Tags</p>
 		<ul class="clearfix">
 		
 			
@@ -293,7 +293,7 @@ Redis 内部使用一个 redisObject 对象来表示所有的 key 和 value，re
 			
 		
 			
-				<li><a href="/tags/redis/" title="redis">redis<sup>1</sup></a></li>
+				<li><a href="/tags/react/" title="react">react<sup>1</sup></a></li>
 			
 		
 			
@@ -301,23 +301,15 @@ Redis 内部使用一个 redisObject 对象来表示所有的 key 和 value，re
 			
 		
 			
-				<li><a href="/tags/函数式编程/" title="函数式编程">函数式编程<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/redux/" title="redux">redux<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/react/" title="react">react<sup>1</sup></a></li>
+				<li><a href="/tags/函数式编程/" title="函数式编程">函数式编程<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/https简介/" title="https简介">https简介<sup>1</sup></a></li>
+				<li><a href="/tags/redis/" title="redis">redis<sup>1</sup></a></li>
 			
 		
 			
@@ -325,7 +317,19 @@ Redis 内部使用一个 redisObject 对象来表示所有的 key 和 value，re
 			
 		
 			
+				<li><a href="/tags/前端性能优化/" title="前端性能优化">前端性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/https简介/" title="https简介">https简介<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -333,7 +337,7 @@ Redis 内部使用一个 redisObject 对象来表示所有的 key 和 value，re
 
 
   <div class="linkslist">
-  <p class="asidetitle">友情链接</p>
+  <p class="asidetitle">Links</p>
     <ul>
         
           <li>
@@ -557,7 +561,7 @@ var _hmt = _hmt || [];
 <!-- Totop Begin -->
 
 	<div id="totop">
-	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
 	</div>
 	<script src="/js/totop.js"></script>
 

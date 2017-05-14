@@ -44,7 +44,7 @@
 				<h1 class="site-name"><a href="/" title="colorfulcow">colorfulcow</a></h1>
 				<h2 class="blog-motto"></h2>
 			</div>
-			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="Menu">
 			</a></div>
 			<nav class="animated">
 				<ul>
@@ -59,7 +59,7 @@
  					
 					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
 						<label>Search</label>
-						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="Search" />
 						<input type="hidden" name="q" value="site:colorfulcow.github.io">
 					</form>
 					
@@ -85,7 +85,7 @@
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2017-05-14T12:43:12.000Z" itemprop="datePublished"> 发表于 2017-05-14</time>
+    <time datetime="2017-05-14T12:43:12.000Z" itemprop="datePublished"> Published 2017-05-14</time>
     
   </p>
 </header>
@@ -157,7 +157,7 @@
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2017-02-07T02:34:34.000Z" itemprop="datePublished"> 发表于 2017-02-07</time>
+    <time datetime="2017-02-07T02:34:34.000Z" itemprop="datePublished"> Published 2017-02-07</time>
     
   </p>
 </header>
@@ -274,7 +274,7 @@
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2017-01-01T15:22:45.000Z" itemprop="datePublished"> 发表于 2017-01-01</time>
+    <time datetime="2017-01-01T15:22:45.000Z" itemprop="datePublished"> Published 2017-01-01</time>
     
   </p>
 </header>
@@ -372,7 +372,7 @@
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2016-09-11T13:15:37.000Z" itemprop="datePublished"> 发表于 2016-09-11</time>
+    <time datetime="2016-09-11T13:15:37.000Z" itemprop="datePublished"> Published 2016-09-11</time>
     
   </p>
 </header>
@@ -440,7 +440,7 @@
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2016-08-14T15:58:48.000Z" itemprop="datePublished"> 发表于 2016-08-14</time>
+    <time datetime="2016-08-14T15:58:48.000Z" itemprop="datePublished"> Published 2016-08-14</time>
     
   </p>
 </header>
@@ -484,7 +484,7 @@
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/react/">react</a><a href="/tags/前端框架/">前端框架</a>
+  <span></span> <a href="/tags/前端框架/">前端框架</a><a href="/tags/react/">react</a>
   </div>
 
 </div>
@@ -515,6 +515,105 @@
         <header class="article-info clearfix">
   <h1 itemprop="name">
     
+      <a href="/2016/06/19/浏览器的reflows/" title="浏览器的reflows" itemprop="url">浏览器的reflows</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
+		
+  <p class="article-time">
+    <time datetime="2016-06-19T14:03:13.000Z" itemprop="datePublished"> Published 2016-06-19</time>
+    
+  </p>
+</header>
+    <div class="article-content">
+        
+        <h3 id="浏览器的reflows-amp-repaints"><a href="#浏览器的reflows-amp-repaints" class="headerlink" title="浏览器的reflows &amp; repaints"></a><strong>浏览器的reflows &amp; repaints</strong></h3><blockquote>
+<p><a href="https://dev.opera.com/articles/efficient-javascript/?page=3#reflow" target="_blank" rel="external">repaint and reflow as one of the three main contributors to sluggish JavaScript</a></p>
+</blockquote>
+<p>opera浏览器的开发者总结了主要有三个因素会导致浏览器中的DOM缓慢</p>
+<ol>
+<li>一个脚本执行大范围的DOM操作 例如从一些数据中新建一个DOM树</li>
+<li>一个脚本触发了多次的repaint和reflow</li>
+<li>一个脚本用一个缓慢的方法定位DOM树中的一个节点</li>
+</ol>
+<p>其中repaint和reflow是三个导致低性能DOM操作的原因之一。</p>
+<h4 id="reapint"><a href="#reapint" class="headerlink" title="reapint"></a><strong>reapint</strong></h4><p>其中，<code>repaint</code>就是重绘,当你改变了元素的视觉效果时发生，这其中包括outline,visibility,background等，根据opera的开发者文章，repaint的代价很昂贵，因为浏览器必须去人页面中所有元素的可见性；</p>
+<h4 id="reflow"><a href="#reflow" class="headerlink" title="reflow"></a><strong>reflow</strong></h4><p><code>reflow</code>的意思是回流，影响超过repaint，对性能的影响更严重，会在某一个DOM元素的位置发生改变后触发，这样浏览器会重新计算所有元素的位置和在页面中的占有的面积，这样的话将会引起页面某一个部分甚至整个页面的重新渲染。改变某一个元素的位置会影响它所有的子节点 (children)、祖先节点 (ancestors) 及兄弟节点(siblings)。在很多场景中reflow相当于重新布局了整个页面。</p>
+<h4 id="有哪些具体的操作会导致reflow"><a href="#有哪些具体的操作会导致reflow" class="headerlink" title="有哪些具体的操作会导致reflow?"></a><strong>有哪些具体的操作会导致reflow?</strong></h4><p>实际上有大批的操作会导致浏览器的回流，其中还和书写css有关。</p>
+<ul>
+<li>重新调整window的尺寸（window.resizing()）</li>
+<li>改变字体大小</li>
+<li>添加或者移除一个样式</li>
+<li>用户交互：用户可以通过 hover 一下 a 链接，在 input 里面输入文字，拖动浏览器的大小，改变字体大小，更换样式表或者字体等都会触发reflow</li>
+<li>激活css伪类，例如：hover</li>
+<li>操作DOM元素的class属性</li>
+<li>操作DOM元素的style属性</li>
+<li>计算 offsetWidth和offsetHeight</li>
+<li>CSS3 动画（animation）和过渡（transition）: 动画的每一 frame 都会触发 Reflow。</li>
+</ul>
+<h4 id="常用的提高性能的原则"><a href="#常用的提高性能的原则" class="headerlink" title="常用的提高性能的原则"></a><strong>常用的提高性能的原则</strong></h4><p><strong><code>布局</code></strong><br>不要用 inline style 或 table 布局，flexbox 布局也会给性能带来一些小困扰。inlinestyle 会在 html 下载完后进行一次额外的 Reflow，table布局的开销远比其他 DOM 元素的布局开销要大。flexbox 的 item 会在 HTML 下载完成后改变尺寸。</p>
+<p><strong><code>简写 CSS</code></strong><br>尽量简写 CSS，避免使用复杂的 CSS 选择器，使用 Unused CSS（<a href="https://unused-css.com/）" target="_blank" rel="external">https://unused-css.com/）</a>, uCSS（<a href="https://github.com/oyvindeh/ucss）" target="_blank" rel="external">https://github.com/oyvindeh/ucss）</a>, gulp-uncss（<a href="https://github.com/ben-eb/gulp-uncss）可以有效的减少样式的定义和文件的大小。" target="_blank" rel="external">https://github.com/ben-eb/gulp-uncss）可以有效的减少样式的定义和文件的大小。</a></p>
+<p><strong><code>优化 DOM</code></strong><br>减少 DOM 的层级，减少 DOM 的数量，如果不需适配老浏览器，删掉一些无用的 wrapper 性质的 DOM 元素，总之越少越好。</p>
+<p><strong><code>慎改 class</code></strong><br>在一个 DOM 树中，尽可能改那些没有特别多子元素 DOM 的 class，子元素少的可以改，多的不推荐。</p>
+<p><strong><code>避免复杂动画</code></strong><br>删掉复杂的动画，运用动画的元素尽量是 position:absolute或 position:fixed 的，这样会让他们脱离文档流，不去影响其他的元素。</p>
+<p><strong><code>善用 display:none</code></strong><br>display:none 的元素不会引发 Reflow 和 Repaint，可以在让这些元素在 display 之前进行一些诸如颜色、尺寸什么的改变。</p>
+<p><strong><code>批量更新元素</code></strong><br>例如以下的操作就会导致浏览器三次reflow<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> myDom = <span class="built_in">document</span>.getElementById(<span class="string">'myDom'</span>)</div><div class="line">myDom.width = <span class="string">'100px'</span></div><div class="line">myDom.width = <span class="string">'100px'</span></div><div class="line">myDom.style.margin = <span class="string">'100px'</span></div></pre></td></tr></table></figure></p>
+<p>可以改用以下方式来优化代码</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> myDom = <span class="built_in">document</span>.getElementById(<span class="string">'myDom'</span>)</div><div class="line">myDom.classList.add(<span class="string">'myStyle'</span>)</div></pre></td></tr></table></figure>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="selector-class">.myStyle</span> &#123;</div><div class="line">	<span class="attribute">width</span>: <span class="number">100px</span>;</div><div class="line">	<span class="attribute">height</span>: <span class="number">100px</span>;</div><div class="line">	<span class="attribute">margin</span>: <span class="number">100px</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>生成新 DOM 时可以使用 DOM fragment，然后先在内存中构建 DOM:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">const</span> frag = <span class="built_in">document</span>.createDocumentFragement()</div></pre></td></tr></table></figure></p>
+<p><strong><code>避免大量 DOM 互相影响</code></strong><br>比如 Tabs 这种场景，如果你点击一个 Tab 会显示它控制的区块，显示的那个区块会影响其他的区块，这样可能会引起 Reflow，因为它们的高度不一样，可以通过固定高度来优化这种场景。</p>
+<p><strong><code>性能永远比酷炫重要</code></strong><br>记住一个原则,性能还是第一位的，如果每一帧移动1个像素会造成你的页面卡顿，那宁愿每一帧移动10像素让动画的帧变得迟钝一些，也不要让页面的性能降下来。</p>
+
+        
+        
+        <p class="article-more-link">
+          
+       </p>
+    </div>
+    <footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/浏览器/">浏览器</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/前端性能优化/">前端性能优化</a>
+  </div>
+
+</div>
+
+
+
+
+<div class="comments-count">
+	
+	  	<span></span>
+		<a href="/2016/06/19/浏览器的reflows/#disqus_thread" class="comments-count-link">Comments</a>
+	
+</div>
+
+</footer>
+
+
+    </article>
+
+
+
+
+
+
+   
+    
+    <article class="post-expand post" itemprop="articleBody"> 
+        <header class="article-info clearfix">
+  <h1 itemprop="name">
+    
       <a href="/2016/03/07/通过css实现各种居中效果/" title="通过css实现各种居中效果" itemprop="url">通过css实现各种居中效果</a>
   </h1>
   <p class="article-author">By
@@ -522,7 +621,7 @@
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2016-03-07T10:42:04.000Z" itemprop="datePublished"> 发表于 2016-03-07</time>
+    <time datetime="2016-03-07T10:42:04.000Z" itemprop="datePublished"> Published 2016-03-07</time>
     
   </p>
 </header>
@@ -614,7 +713,7 @@
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2016-01-21T04:42:40.000Z" itemprop="datePublished"> 发表于 2016-01-21</time>
+    <time datetime="2016-01-21T04:42:40.000Z" itemprop="datePublished"> Published 2016-01-21</time>
     
   </p>
 </header>
@@ -671,7 +770,7 @@
 
   <div class="article-tags">
   
-  <span></span> <a href="/tags/redux/">redux</a><a href="/tags/前端框架/">前端框架</a>
+  <span></span> <a href="/tags/前端框架/">前端框架</a><a href="/tags/redux/">redux</a>
   </div>
 
 </div>
@@ -709,7 +808,7 @@
 		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
 		
   <p class="article-time">
-    <time datetime="2015-12-25T13:51:45.000Z" itemprop="datePublished"> 发表于 2015-12-25</time>
+    <time datetime="2015-12-25T13:51:45.000Z" itemprop="datePublished"> Published 2015-12-25</time>
     
   </p>
 </header>
@@ -775,10 +874,10 @@
 
 
 </div>
-      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+      <div class="openaside"><a class="navbutton" href="#" title="Show Sidebar"></a></div>
 
 <div id="asidepart">
-<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<div class="closeaside"><a class="closebutton" href="#" title="Hide Sidebar"></a></div>
 <aside class="clearfix">
 
   
@@ -786,7 +885,7 @@
 
   
 <div class="categorieslist">
-	<p class="asidetitle">分类</p>
+	<p class="asidetitle">Categories</p>
 		<ul>
 		
 		  
@@ -802,8 +901,6 @@
 		  
 		
 		  
-		
-		  
 			<li><a href="/categories/javascript/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
 		  
 		
@@ -812,6 +909,8 @@
 		  
 		
 		  
+			<li><a href="/categories/浏览器/" title="浏览器">浏览器<sup>1</sup></a></li>
+		  
 		
 		</ul>
 </div>
@@ -819,7 +918,7 @@
 
   
 <div class="tagslist">
-	<p class="asidetitle">标签</p>
+	<p class="asidetitle">Tags</p>
 		<ul class="clearfix">
 		
 			
@@ -827,7 +926,7 @@
 			
 		
 			
-				<li><a href="/tags/redis/" title="redis">redis<sup>1</sup></a></li>
+				<li><a href="/tags/react/" title="react">react<sup>1</sup></a></li>
 			
 		
 			
@@ -835,23 +934,15 @@
 			
 		
 			
-				<li><a href="/tags/函数式编程/" title="函数式编程">函数式编程<sup>1</sup></a></li>
-			
-		
-			
-				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
-			
-		
-			
 				<li><a href="/tags/redux/" title="redux">redux<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/react/" title="react">react<sup>1</sup></a></li>
+				<li><a href="/tags/函数式编程/" title="函数式编程">函数式编程<sup>1</sup></a></li>
 			
 		
 			
-				<li><a href="/tags/https简介/" title="https简介">https简介<sup>1</sup></a></li>
+				<li><a href="/tags/redis/" title="redis">redis<sup>1</sup></a></li>
 			
 		
 			
@@ -859,7 +950,19 @@
 			
 		
 			
+				<li><a href="/tags/前端性能优化/" title="前端性能优化">前端性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+			
+		
+			
 				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/https简介/" title="https简介">https简介<sup>1</sup></a></li>
 			
 		
 		</ul>
@@ -867,7 +970,7 @@
 
 
   <div class="linkslist">
-  <p class="asidetitle">友情链接</p>
+  <p class="asidetitle">Links</p>
     <ul>
         
           <li>
@@ -994,7 +1097,7 @@ var _hmt = _hmt || [];
 <!-- Totop Begin -->
 
 	<div id="totop">
-	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	<a title="Back to Top"><img src="/img/scrollup.png"/></a>
 	</div>
 	<script src="/js/totop.js"></script>
 
