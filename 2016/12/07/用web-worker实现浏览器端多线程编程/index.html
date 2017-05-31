@@ -1,0 +1,551 @@
+
+ <!DOCTYPE HTML>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+  
+    <title>用web worker实现浏览器端多线程编程 | colorfulcow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
+    
+    <meta name="author" content="colorfulcow">
+    
+
+    
+    <meta name="description" content="什么是web workerweb worker是html5标准中提出的一个api(eg. Worker()), 这个api允许你在javascript的主线程之外运行一个完全独立的javascript线程，这个独立的线程可以和主线程并行运行，并且有属于自己的全局上下文(Window)。web worker 规范中定义了两类工作线程，分别是专用线程Dedicated Worker和共享线程 Shar">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用web worker实现浏览器端多线程编程">
+<meta property="og:url" content="https://colorfulcow.github.io/2016/12/07/用web-worker实现浏览器端多线程编程/index.html">
+<meta property="og:site_name" content="colorfulcow">
+<meta property="og:description" content="什么是web workerweb worker是html5标准中提出的一个api(eg. Worker()), 这个api允许你在javascript的主线程之外运行一个完全独立的javascript线程，这个独立的线程可以和主线程并行运行，并且有属于自己的全局上下文(Window)。web worker 规范中定义了两类工作线程，分别是专用线程Dedicated Worker和共享线程 Shar">
+<meta property="og:updated_time" content="2017-05-31T03:58:24.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="用web worker实现浏览器端多线程编程">
+<meta name="twitter:description" content="什么是web workerweb worker是html5标准中提出的一个api(eg. Worker()), 这个api允许你在javascript的主线程之外运行一个完全独立的javascript线程，这个独立的线程可以和主线程并行运行，并且有属于自己的全局上下文(Window)。web worker 规范中定义了两类工作线程，分别是专用线程Dedicated Worker和共享线程 Shar">
+
+    
+    <link rel="alternative" href="/atom.xml" title="colorfulcow" type="application/atom+xml">
+    
+    
+    <link rel="icon" href="/img/favicon.ico">
+    
+    
+    <link rel="apple-touch-icon" href="/img/jacman.jpg">
+    <link rel="apple-touch-icon-precomposed" href="/img/jacman.jpg">
+    
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+  <body>
+    <header>
+      
+<div>
+		
+			<div id="imglogo">
+				<a href="/"><img src="/img/logo.png" alt="colorfulcow" title="colorfulcow"/></a>
+			</div>
+			
+			<div id="textlogo">
+				<h1 class="site-name"><a href="/" title="colorfulcow">colorfulcow</a></h1>
+				<h2 class="blog-motto"></h2>
+			</div>
+			<div class="navbar"><a class="navbutton navmobile" href="#" title="菜单">
+			</a></div>
+			<nav class="animated">
+				<ul>
+					
+						<li><a href="/">Home</a></li>
+					
+						<li><a href="/archives">Archives</a></li>
+					
+						<li><a href="/about">About</a></li>
+					
+					<li>
+ 					
+					<form class="search" action="//google.com/search" method="get" accept-charset="utf-8">
+						<label>Search</label>
+						<input type="search" id="search" name="q" autocomplete="off" maxlength="20" placeholder="搜索" />
+						<input type="hidden" name="q" value="site:colorfulcow.github.io">
+					</form>
+					
+					</li>
+				</ul>
+			</nav>
+</div>
+
+    </header>
+    <div id="container">
+      <div id="main" class="post" itemscope itemprop="blogPost">
+  
+	<article itemprop="articleBody"> 
+		<header class="article-info clearfix">
+  <h1 itemprop="name">
+    
+      <a href="/2016/12/07/用web-worker实现浏览器端多线程编程/" title="用web worker实现浏览器端多线程编程" itemprop="url">用web worker实现浏览器端多线程编程</a>
+  </h1>
+  <p class="article-author">By
+       
+		<a href="/about" title="colorfulcow" target="_blank" itemprop="author">colorfulcow</a>
+		
+  <p class="article-time">
+    <time datetime="2016-12-07T03:47:40.000Z" itemprop="datePublished"> 发表于 2016-12-07</time>
+    
+  </p>
+</header>
+	<div class="article-content">
+		
+		<div id="toc" class="toc-article">
+			<strong class="toc-title">文章目录</strong>
+		
+			<ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#什么是web-worker"><span class="toc-number">1.</span> <span class="toc-text">什么是web worker</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#web-worker-的限制"><span class="toc-number">2.</span> <span class="toc-text">web worker 的限制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#worker线程和主线程之间通信"><span class="toc-number">3.</span> <span class="toc-text">worker线程和主线程之间通信</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Dedicated-Worker"><span class="toc-number">4.</span> <span class="toc-text">Dedicated Worker</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Shared-Worker"><span class="toc-number">5.</span> <span class="toc-text">Shared Worker</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#我们可以用web-worker做哪些有意思的东西？"><span class="toc-number">6.</span> <span class="toc-text">我们可以用web worker做哪些有意思的东西？</span></a></li></ol>
+		
+		</div>
+		
+		<h4 id="什么是web-worker"><a href="#什么是web-worker" class="headerlink" title="什么是web worker"></a>什么是web worker</h4><p>web worker是html5标准中提出的一个api(eg. Worker()), 这个api允许你在javascript的主线程之外运行一个完全独立的javascript线程，这个独立的线程可以和主线程并行运行，并且有属于自己的全局上下文(Window)。web worker 规范中定义了两类工作线程，分别是专用线程Dedicated Worker和共享线程 Shared Worker，其中，Dedicated Worker只能为一个页面所使用，而Shared Worker则可以被多个页面所共享。<br>根据web worker的定义，我们可以了解到web worker提供了在浏览器端多线程编程的能力。</p>
+<h4 id="web-worker-的限制"><a href="#web-worker-的限制" class="headerlink" title="web worker 的限制"></a>web worker 的限制</h4><p>在worker线程中，可以获得下列对象</p>
+<ul>
+<li>navigator对象</li>
+<li>location对象，只读</li>
+<li>XMLHttpRequest对象</li>
+<li>setTimeout/setInterval方法</li>
+<li>Application Cache</li>
+<li>通过importScripts()方法加载其他脚本</li>
+<li>创建新的Web Worker<br>worker线程不能获得下列对象</li>
+<li>DOM对象</li>
+<li>window对象</li>
+<li>document对象</li>
+<li>parent对象<br>上述的规范，限制了在worker线程中获得主线程页面相关对象的能力，所以在worker线程中，不能进行dom元素的更新。</li>
+</ul>
+<h4 id="worker线程和主线程之间通信"><a href="#worker线程和主线程之间通信" class="headerlink" title="worker线程和主线程之间通信"></a>worker线程和主线程之间通信</h4><p>worker线程到主线程，主线程到worker线程之间都是通过消息系统传递数据，一方通过postMessage()方法发送数据，另一方通过监听onmessage事件来接收数据。通信的数据是通过copy后传递的，而不是共享数据，所以不用担心接收方修改数据后会影响发送方。</p>
+<h4 id="Dedicated-Worker"><a href="#Dedicated-Worker" class="headerlink" title="Dedicated Worker"></a>Dedicated Worker</h4><p><code>main.js</code><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> first = <span class="built_in">document</span>.querySelector(<span class="string">'#number1'</span>);</div><div class="line"><span class="keyword">var</span> second = <span class="built_in">document</span>.querySelector(<span class="string">'#number2'</span>);</div><div class="line"></div><div class="line"><span class="keyword">var</span> result = <span class="built_in">document</span>.querySelector(<span class="string">'.result'</span>);</div><div class="line"></div><div class="line"><span class="keyword">if</span> (<span class="built_in">window</span>.Worker) &#123; <span class="comment">// Check if Browser supports the Worker api.</span></div><div class="line">	<span class="comment">// Requires script name as input</span></div><div class="line">	<span class="keyword">var</span> myWorker = <span class="keyword">new</span> Worker(<span class="string">"worker.js"</span>);</div><div class="line"></div><div class="line"><span class="comment">// onkeyup could be used instead of onchange if you wanted to update the answer every time</span></div><div class="line"><span class="comment">// an entered value is changed, and you don't want to have to unfocus the field to update its .value</span></div><div class="line"></div><div class="line">	first.onchange = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">	  myWorker.postMessage([first.value,second.value]); <span class="comment">// Sending message as an array to the worker</span></div><div class="line">	  <span class="built_in">console</span>.log(<span class="string">'Message posted to worker'</span>);</div><div class="line">	&#125;;</div><div class="line"></div><div class="line">	second.onchange = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">	  myWorker.postMessage([first.value,second.value]);</div><div class="line">	  <span class="built_in">console</span>.log(<span class="string">'Message posted to worker'</span>);</div><div class="line">	&#125;;</div><div class="line"></div><div class="line">	myWorker.onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</div><div class="line">		result.textContent = e.data;</div><div class="line">		<span class="built_in">console</span>.log(<span class="string">'Message received from worker'</span>);</div><div class="line">	&#125;;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><code>worker.js</code><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Message received from main script'</span>);</div><div class="line">  <span class="keyword">var</span> workerResult = <span class="string">'Result: '</span> + (e.data[<span class="number">0</span>] * e.data[<span class="number">1</span>]);</div><div class="line">  <span class="built_in">console</span>.log(<span class="string">'Posting message back to main script'</span>);</div><div class="line">  postMessage(workerResult);</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="Shared-Worker"><a href="#Shared-Worker" class="headerlink" title="Shared Worker"></a>Shared Worker</h4><p><code>main.js</code></p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> first = <span class="built_in">document</span>.querySelector(<span class="string">'#number1'</span>);</div><div class="line"><span class="keyword">var</span> second = <span class="built_in">document</span>.querySelector(<span class="string">'#number2'</span>);</div><div class="line"></div><div class="line"><span class="keyword">var</span> result1 = <span class="built_in">document</span>.querySelector(<span class="string">'.result1'</span>);</div><div class="line"></div><div class="line"><span class="keyword">if</span> (!!<span class="built_in">window</span>.SharedWorker) &#123;</div><div class="line">  <span class="keyword">var</span> myWorker = <span class="keyword">new</span> SharedWorker(<span class="string">"worker.js"</span>);</div><div class="line"></div><div class="line">  first.onchange = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    myWorker.port.postMessage([first.value, second.value]);</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'Message posted to worker'</span>);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  second.onchange = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    myWorker.port.postMessage([first.value, second.value]);</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'Message posted to worker'</span>);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  myWorker.port.onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</div><div class="line">    result1.textContent = e.data;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'Message received from worker'</span>);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><code>another main.js</code><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> squareNumber = <span class="built_in">document</span>.querySelector(<span class="string">'#number3'</span>);</div><div class="line"></div><div class="line"><span class="keyword">var</span> result2 = <span class="built_in">document</span>.querySelector(<span class="string">'.result2'</span>);</div><div class="line"></div><div class="line"><span class="keyword">if</span> (!!<span class="built_in">window</span>.SharedWorker) &#123;</div><div class="line">  <span class="keyword">var</span> myWorker = <span class="keyword">new</span> SharedWorker(<span class="string">"worker.js"</span>);</div><div class="line"></div><div class="line">  squareNumber.onchange = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</div><div class="line">    myWorker.port.postMessage([squareNumber.value, squareNumber.value]);</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'Message posted to worker'</span>);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">  myWorker.port.onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</div><div class="line">    result2.textContent = e.data;</div><div class="line">    <span class="built_in">console</span>.log(<span class="string">'Message received from worker'</span>);</div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p><code>worker.js</code><br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">onconnect = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</div><div class="line">  <span class="keyword">var</span> port = e.ports[<span class="number">0</span>];</div><div class="line"></div><div class="line">  port.onmessage = <span class="function"><span class="keyword">function</span>(<span class="params">e</span>) </span>&#123;</div><div class="line">    <span class="keyword">var</span> workerResult = <span class="string">'Result: '</span> + (e.data[<span class="number">0</span>] * e.data[<span class="number">1</span>]);</div><div class="line">    port.postMessage(workerResult);</div><div class="line">  &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<h4 id="我们可以用web-worker做哪些有意思的东西？"><a href="#我们可以用web-worker做哪些有意思的东西？" class="headerlink" title="我们可以用web worker做哪些有意思的东西？"></a>我们可以用web worker做哪些有意思的东西？</h4><p>Web Worker自身是由webkit多线程实现，但它并没有为Javasctipt语言带来多线程编程特性，我们现在仍然不能在Javascript代码中创建并管理一个线程，或者主动控制线程间的同步与锁等特性。<br>Web Worker是worker编程模型在浏览器端Javascript语言中的应用。浏览器的运行时,同其他GUI程序类似，核心逻辑像是下面这个无限循环:<br><figure class="highlight javascript"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">while</span>(<span class="literal">true</span>)&#123;  </div><div class="line">    <span class="number">1</span> 更新数据和对象状态  </div><div class="line">    <span class="number">2</span> 渲染可视化UI  </div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>在Web Worker之前，Javascript执行引擎只能在一个单线程环境中完成这两项任务。而在其他典型GUI框架，如前文Swing库中，早已引入了Swing Worker来解决大量计算对UI渲染的阻塞问题。Web Worker的引入，是借鉴了worker编程模型，给单线程的Javascript带来了后台计算的能力。</p>
+<p>既然Web Worker为浏览器端Javascript带来了后台计算能力，我们便可利用这一能力，将无限循环中第一项“更新数据和对象状态”的耗时部分交由Web Worker执行，提升页面性能。</p>
+<ul>
+<li>使用专用线程进行大量数学运算</li>
+<li>图像处理<br>通过使用从&lt;canvas&gt;或者&lt;video&gt;元素中获取的数据，可以把图像分割成几个不同的区域并且把它们推送给并行的不同Workers来做计算</li>
+<li>大量数据的检索<br>当需要在调用 ajax后处理大量的数据，如果处理这些数据所需的时间长短非常重要，可以在Web Worker中来做这些，避免冻结UI线程。</li>
+<li>背景数据分析<br>由于在使用Web Worker的时候，我们有更多潜在的CPU可用时间，我们现在可以考虑一下JavaScript中的新应用场景。例如，我们可以想像在不影响UI体验的情况下实时处理用户输入。利用这样一种可能，我们可以想像一个像Word（Office Web Apps 套装）一样的应用：当用户打字时后台在词典中进行查找，帮助用户自动纠错等等。</li>
+</ul>
+<p>参考资料：<br><a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API" target="_blank" rel="external">https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API</a></p>
+<p><a href="http://www.alloyteam.com/2015/11/deep-in-web-worker/" target="_blank" rel="external">http://www.alloyteam.com/2015/11/deep-in-web-worker/</a></p>
+  
+	</div>
+		<footer class="article-footer clearfix">
+<div class="article-catetags">
+
+<div class="article-categories">
+  <span></span>
+  <a class="article-category-link" href="/categories/浏览器/">浏览器</a>►<a class="article-category-link" href="/categories/浏览器/html5/">html5</a>
+</div>
+
+
+  <div class="article-tags">
+  
+  <span></span> <a href="/tags/web-worker/">web-worker</a>
+  </div>
+
+</div>
+
+
+
+	<div class="article-share" id="share">
+	
+	  <div data-url="https://colorfulcow.github.io/2016/12/07/用web-worker实现浏览器端多线程编程/" data-title="用web worker实现浏览器端多线程编程 | colorfulcow" data-tsina="null" class="share clearfix">
+	  </div>
+	
+	</div>
+
+
+</footer>
+
+   	       
+	</article>
+	
+<nav class="article-nav clearfix">
+ 
+ <div class="prev" >
+ <a href="/2017/01/01/有关javascript事件模型的一点总结/" title="有关javascript事件模型的一点总结">
+  <strong>上一篇：</strong><br/>
+  <span>
+  有关javascript事件模型的一点总结</span>
+</a>
+</div>
+
+
+<div class="next">
+<a href="/2016/09/11/函数组合/"  title="函数组合">
+ <strong>下一篇：</strong><br/> 
+ <span>函数组合
+</span>
+</a>
+</div>
+
+</nav>
+
+	
+
+<section id="comments" class="comment">
+  <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </div>
+</section>
+
+</div>  
+      <div class="openaside"><a class="navbutton" href="#" title="显示侧边栏"></a></div>
+
+  <div id="toc" class="toc-aside">
+  <strong class="toc-title">文章目录</strong>
+ 
+ <ol class="toc"><li class="toc-item toc-level-4"><a class="toc-link" href="#什么是web-worker"><span class="toc-number">1.</span> <span class="toc-text">什么是web worker</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#web-worker-的限制"><span class="toc-number">2.</span> <span class="toc-text">web worker 的限制</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#worker线程和主线程之间通信"><span class="toc-number">3.</span> <span class="toc-text">worker线程和主线程之间通信</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Dedicated-Worker"><span class="toc-number">4.</span> <span class="toc-text">Dedicated Worker</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#Shared-Worker"><span class="toc-number">5.</span> <span class="toc-text">Shared Worker</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#我们可以用web-worker做哪些有意思的东西？"><span class="toc-number">6.</span> <span class="toc-text">我们可以用web worker做哪些有意思的东西？</span></a></li></ol>
+ 
+  </div>
+
+<div id="asidepart">
+<div class="closeaside"><a class="closebutton" href="#" title="隐藏侧边栏"></a></div>
+<aside class="clearfix">
+
+  
+
+
+  
+<div class="categorieslist">
+	<p class="asidetitle">分类</p>
+		<ul>
+		
+		  
+			<li><a href="/categories/css/" title="css">css<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/浏览器/html5/" title="html5">html5<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/http/" title="http">http<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/javascript/" title="javascript">javascript<sup>4</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/javascript/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/redis/" title="redis">redis<sup>1</sup></a></li>
+		  
+		
+		  
+			<li><a href="/categories/浏览器/" title="浏览器">浏览器<sup>2</sup></a></li>
+		  
+		
+		</ul>
+</div>
+
+
+  
+<div class="tagslist">
+	<p class="asidetitle">标签</p>
+		<ul class="clearfix">
+		
+			
+				<li><a href="/tags/前端框架/" title="前端框架">前端框架<sup>2</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/javascript/" title="javascript">javascript<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/redis/" title="redis">redis<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/redux/" title="redux">redux<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/https简介/" title="https简介">https简介<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/函数式编程/" title="函数式编程">函数式编程<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/HTTP/" title="HTTP">HTTP<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/nodejs/" title="nodejs">nodejs<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/前端性能优化/" title="前端性能优化">前端性能优化<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/web-worker/" title="web-worker">web-worker<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/css居中/" title="css居中">css居中<sup>1</sup></a></li>
+			
+		
+			
+				<li><a href="/tags/react/" title="react">react<sup>1</sup></a></li>
+			
+		
+		</ul>
+</div>
+
+
+  <div class="linkslist">
+  <p class="asidetitle">友情链接</p>
+    <ul>
+        
+          <li>
+            
+            	<a href="https://github.com/ColorfulCow" target="_blank" title="github">github</a>
+            
+          </li>
+        
+    </ul>
+</div>
+
+</aside>
+</div>
+    </div>
+    <footer><div id="footer" >
+		<p class="copyright">
+		Powered by <a href="http://hexo.io" target="_blank" title="hexo">hexo</a> and Theme by <a href="https://github.com/wuchong/jacman" target="_blank" title="Jacman">Jacman</a> © 2017
+		
+		<a href="/about" target="_blank" title="colorfulcow">colorfulcow</a>
+		
+		</p>
+</div>
+</footer>
+    <script src="/js/jquery-2.0.3.min.js"></script>
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/jquery.qrcode-0.12.0.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.navbar').click(function(){
+    $('header nav').toggleClass('shownav');
+  });
+  var myWidth = 0;
+  function getSize(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+  };
+  var m = $('#main'),
+      a = $('#asidepart'),
+      c = $('.closeaside'),
+      o = $('.openaside');
+  c.click(function(){
+    a.addClass('fadeOut').css('display', 'none');
+    o.css('display', 'block').addClass('fadeIn');
+    m.addClass('moveMain');
+  });
+  o.click(function(){
+    o.css('display', 'none').removeClass('beforeFadeIn');
+    a.css('display', 'block').removeClass('fadeOut').addClass('fadeIn');      
+    m.removeClass('moveMain');
+  });
+  $(window).scroll(function(){
+    o.css("top",Math.max(80,260-$(this).scrollTop()));
+  });
+  
+  $(window).resize(function(){
+    getSize(); 
+    if (myWidth >= 1024) {
+      $('header nav').removeClass('shownav');
+    }else{
+      m.removeClass('moveMain');
+      a.css('display', 'block').removeClass('fadeOut');
+      o.css('display', 'none');
+      
+      $('#toc.toc-aside').css('display', 'none');
+        
+    }
+  });
+});
+</script>
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var ai = $('.article-content>iframe'),
+      ae = $('.article-content>embed'),
+      t  = $('#toc'),
+      ta = $('#toc.toc-aside'),
+      o  = $('.openaside'),
+      c  = $('.closeaside');
+  if(ai.length>0){
+    ai.wrap('<div class="video-container" />');
+  };
+  if(ae.length>0){
+   ae.wrap('<div class="video-container" />');
+  };
+  c.click(function(){
+    ta.css('display', 'block').addClass('fadeIn');
+  });
+  o.click(function(){
+    ta.css('display', 'none');
+  });
+  $(window).scroll(function(){
+    ta.css("top",Math.max(140,320-$(this).scrollTop()));
+  });
+});
+</script>
+
+
+<script type="text/javascript">
+$(document).ready(function(){ 
+  var $this = $('.share'),
+      url = $this.attr('data-url'),
+      encodedUrl = encodeURIComponent(url),
+      title = $this.attr('data-title'),
+      tsina = $this.attr('data-tsina'),
+      description = $this.attr('description');
+  var html = [
+  '<div class="hoverqrcode clearfix"></div>',
+  '<a class="overlay" id="qrcode"></a>',
+  '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="article-share-facebook" target="_blank" title="Facebook"></a>',
+  '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="article-share-twitter" target="_blank" title="Twitter"></a>',
+  '<a href="#qrcode" class="article-share-qrcode" title="微信"></a>',
+  '<a href="http://widget.renren.com/dialog/share?resourceUrl=' + encodedUrl + '&srcUrl=' + encodedUrl + '&title=' + title +'" class="article-share-renren" target="_blank" title="人人"></a>',
+  '<a href="http://service.weibo.com/share/share.php?title='+title+'&url='+encodedUrl +'&ralateUid='+ tsina +'&searchPic=true&style=number' +'" class="article-share-weibo" target="_blank" title="微博"></a>',
+  '<span title="Share to"></span>'
+  ].join('');
+  $this.append(html);
+
+  $('.hoverqrcode').hide();
+
+  var myWidth = 0;
+  function updatehoverqrcode(){
+    if( typeof( window.innerWidth ) == 'number' ) {
+      myWidth = window.innerWidth;
+    } else if( document.documentElement && document.documentElement.clientWidth) {
+      myWidth = document.documentElement.clientWidth;
+    };
+    var qrsize = myWidth > 1024 ? 200:100;
+    var options = {render: 'image', size: qrsize, fill: '#2ca6cb', text: url, radius: 0.5, quiet: 1};
+    var p = $('.article-share-qrcode').position();
+    $('.hoverqrcode').empty().css('width', qrsize).css('height', qrsize)
+                          .css('left', p.left-qrsize/2+20).css('top', p.top-qrsize-10)
+                          .qrcode(options);
+  };
+  $(window).resize(function(){
+    $('.hoverqrcode').hide();
+  });
+  $('.article-share-qrcode').click(function(){
+    updatehoverqrcode();
+    $('.hoverqrcode').toggle();
+  });
+  $('.article-share-qrcode').hover(function(){}, function(){
+      $('.hoverqrcode').hide();
+  });
+});   
+</script>
+
+
+
+
+<script type="text/javascript">
+
+var disqus_shortname = 'https-colorfulcow-github-io';
+
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+(function(){
+  var dsq = document.createElement('script');
+  dsq.type = 'text/javascript';
+  dsq.async = true;
+  dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+  (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+}());
+</script>
+
+
+
+
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+$(document).ready(function(){ 
+  $('.article-content').each(function(i){
+    $(this).find('img').each(function(){
+      if ($(this).parent().hasClass('fancybox')) return;
+      var alt = this.alt;
+      if (alt) $(this).after('<span class="caption">' + alt + '</span>');
+      $(this).wrap('<a href="' + this.src + '" title="' + alt + '" class="fancybox"></a>');
+    });
+    $(this).find('.fancybox').each(function(){
+      $(this).attr('rel', 'article' + i);
+    });
+  });
+  if($.fancybox){
+    $('.fancybox').fancybox();
+  }
+}); 
+</script>
+
+
+
+<!-- Analytics Begin -->
+
+
+
+<script>
+var _hmt = _hmt || [];
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "//hm.baidu.com/hm.js?e6d1f421bbc9962127a50488f9ed37d1";
+  var s = document.getElementsByTagName("script")[0]; 
+  s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+
+
+<!-- Analytics End -->
+
+<!-- Totop Begin -->
+
+	<div id="totop">
+	<a title="返回顶部"><img src="/img/scrollup.png"/></a>
+	</div>
+	<script src="/js/totop.js"></script>
+
+<!-- Totop End -->
+
+<!-- MathJax Begin -->
+<!-- mathjax config similar to math.stackexchange -->
+
+
+<!-- MathJax End -->
+
+<!-- Tiny_search Begin -->
+
+<!-- Tiny_search End -->
+
+  </body>
+</html>
